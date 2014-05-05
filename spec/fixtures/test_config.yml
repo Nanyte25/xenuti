@@ -1,0 +1,8 @@
+---
+general:
+  repo: git@example.com:user/repo
+static_analysis:
+  brakeman:
+    enabled: true
+  codesake_dawn:
+    enabled: false

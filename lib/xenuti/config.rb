@@ -19,7 +19,7 @@ class Xenuti::Config
       when @config_hash[name].is_a?(Hash)
         define_accessor name
         name = ConfigWrapper.new(@config_hash[name])
-      when @config_hash[name]
+      when !@config_hash[name].nil?
         define_accessor name
         name = @config_hash[name]
       else

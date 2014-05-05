@@ -8,3 +8,4 @@ module Xenuti
 end
 
 require 'xenuti/config'
+require 'xenuti/repository'

@@ -16,5 +16,11 @@ describe Xenuti::Config do
       config.static_analysis.brakeman.enabled.should be_true
       config.static_analysis.codesake_dawn.enabled.should be_false
     end
+
+    it 'should allow changes in config' do
+      config = Xenuti::Config.new(File.new config_file)
+      config.static_analysis.brakeman.enabled = false
+      config.static_analysis.brakeman.enabled.should be_false
+    end
   end
 end

@@ -4,44 +4,26 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
-require 'yaml'
-require 'forwardable'
-require 'ruby_util/hash'
+require 'safe_yaml'
+require 'ruby_util/attribute_accessors'
 
 class Xenuti::Config
-  class ConfigWrapper
-    def initialize(config_hash)
-      @config_hash = config_hash.deep_symbolize_keys
-    end
+  include AttributeAccessors
 
-    def method_missing(name, *_args, &_block)
-      case
-      when @config_hash[name].is_a?(Hash)
-        define_accessor name
-        name = ConfigWrapper.new(@config_hash[name])
-      when !@config_hash[name].nil?
-        define_accessor name
-        name = @config_hash[name]
-      else
-        fail(NoMethodError, "unknown configuration root #{name}", caller)
-      end
-    end
-
-    def define_accessor(name)
-      define_singleton_method "#{name}" do
-        instance_variable_get("@#{name}")
-      end
-
-      define_singleton_method "#{name}=" do |value|
-        instance_variable_set("@#{name}", value)
-      end
-    end
+  def initialize(config_io)
+    define_accessors(self, YAML.load(config_io.read, :safe => true))
   end
 
-  extend Forwardable
-  def_delegator :@config_wrapper, :method_missing, :method_missing
-
-  def initialize(config)
-    @config_wrapper = ConfigWrapper.new(YAML.load(config.read))
+  def define_accessors(config, config_hash)
+    config_hash.each_pair do |key, value|
+      define_attr_reader(config, key)
+      define_attr_writer(config, key)
+      if value.is_a?(Hash)
+        config.send("#{key}=", Object.new)
+        define_accessors(config.send(key), value)
+      else
+        config.send("#{key}=", value)
+      end
+    end
   end
 end

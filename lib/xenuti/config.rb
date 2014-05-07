@@ -26,4 +26,5 @@ class Xenuti::Config
       end
     end
   end
+
 end

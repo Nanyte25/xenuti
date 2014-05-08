@@ -5,26 +5,52 @@
 # MIT license.
 
 require 'safe_yaml'
+require 'ruby_util/hash'
 require 'ruby_util/attribute_accessors'
 
-class Xenuti::Config
-  include AttributeAccessors
+class Xenuti::Config < Hash
 
-  def initialize(config_io)
-    define_accessors(self, YAML.load(config_io.read, :safe => true))
+  def initialize(hash)
+    self.merge! hash.deep_symbolize_keys
   end
 
-  def define_accessors(config, config_hash)
-    config_hash.each_pair do |key, value|
-      define_attr_reader(config, key)
-      define_attr_writer(config, key)
-      if value.is_a?(Hash)
-        config.send("#{key}=", Object.new)
-        define_accessors(config.send(key), value)
-      else
-        config.send("#{key}=", value)
-      end
+  def self.from_yaml(yaml_string)
+    self.new(YAML.load(yaml_string, :safe => true))
+  end
+
+  def [](key)
+    key = key.to_sym if key.is_a? String
+    super(key)
+  end
+
+  def []=(key, val)
+    key = key.to_sym if key.is_a? String
+    val = self.class.new(val) if val.is_a? Hash
+    super(key, val)
+  end
+
+  def method_missing(name, *args, &block)
+    if name =~ /=\Z/
+      define_accessor name
+      self.send(name, *args, &block)
+    elsif !self[name].nil?
+      define_accessor name
+      self[name] = self.class.new(self[name]) if self[name].is_a?(Hash)
+      self.send(name, *args, &block)
+    else
+      fail(NoMethodError, "unknown configuration root #{name}", caller)
     end
   end
 
+  def define_accessor(name)
+    name = name.to_s.sub('=','')
+
+    define_singleton_method name do
+      self[name]
+    end
+
+    define_singleton_method "#{name}=" do |val|
+      self[name] = val
+    end
+  end
 end

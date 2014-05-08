@@ -6,7 +6,6 @@
 
 require 'safe_yaml'
 require 'ruby_util/hash'
-require 'ruby_util/attribute_accessors'
 
 class Xenuti::Config < Hash
 

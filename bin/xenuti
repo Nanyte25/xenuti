@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+$LOAD_PATH.unshift(File.expand_path(File.dirname(__FILE__)) + '/../lib')
+
+require 'commander/import'
+require 'xenuti'
+
+program :version, Xenuti::Version
+program :description, 'Continuous security scanning and static analysis for web applications.'
+
+command :run do |c|
+  c.syntax = 'xenuti run [configuration file]'
+  c.description = 'Execute scans'
+  c.action do |args, options|
+    config = Xenuti::Config.from_yaml(File.new(args.first).read)
+    processor = Xenuti::Processor.new(config)
+    processor.run
+  end
+end

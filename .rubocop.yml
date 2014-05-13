@@ -1,0 +1,22 @@
+
+AllCops:
+  Exclude:
+    - 'tmp/**'
+    - 'spec/fixtures/**'
+
+Encoding:
+  Enabled: false
+
+Documentation:
+  Enabled: false
+
+ClassAndModuleChildren:
+  Enabled: false
+
+LineLength:
+  Max: 80
+  Exclude: 
+    - 'bin/xenuti'
+
+SpecialGlobalVars:
+  Enabled: false

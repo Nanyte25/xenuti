@@ -1,4 +1,5 @@
 .rbenv-gemsets
 .ruby-version
 .ruby-gemset
+Gemfile.lock
 tmp

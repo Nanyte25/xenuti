@@ -35,7 +35,7 @@ class Xenuti::Repository
 
     def git_repo?(dir)
       cwd = Dir.pwd
-      return false unless Dir.exists? dir
+      return false unless Dir.exist? dir
       begin
         Dir.chdir dir
         %x(git status 2>&1)

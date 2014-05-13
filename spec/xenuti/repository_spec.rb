@@ -22,6 +22,7 @@ describe Xenuti::Repository do
       Dir.mktmpdir do |tmpdir|
         Xenuti::Repository.fetch_source(config, tmpdir)
         Dir.compare(config.general.repo, tmpdir).should be_true
+        config.general.source.should be_eql(tmpdir)
       end
     end
 
@@ -79,6 +80,10 @@ describe Xenuti::Repository do
       old_pwd = Dir.pwd
       Xenuti::Repository.git_repo?('/tmp').should be_false
       Dir.pwd.should be_eql(old_pwd)
+    end
+
+    it 'should return false when argument is non-existent dir' do
+      Xenuti::Repository.git_repo?('/akjfdjhadkjvc').should be_false
     end
   end
 end

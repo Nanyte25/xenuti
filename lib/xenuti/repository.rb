@@ -14,6 +14,7 @@ class Xenuti::Repository
       else
         clone(config.general.repo, destination)
       end
+      config.general.source = destination
     end
 
     def clone(source, destination)
@@ -34,6 +35,7 @@ class Xenuti::Repository
 
     def git_repo?(dir)
       cwd = Dir.pwd
+      return false unless Dir.exists? dir
       begin
         Dir.chdir dir
         %x(git status 2>&1)

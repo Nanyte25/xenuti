@@ -4,6 +4,10 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
+# Require this file to dynamically generate two Git repositories:
+#   * ORIGIN_REPO, which will have 2 commits
+#   * OUTDATED_REPO, which is a clone of ORIGIN_REPO and is 1 commit behind
+
 require 'tmpdir'
 require 'fileutils'
 

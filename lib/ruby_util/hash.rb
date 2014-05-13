@@ -4,7 +4,6 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
-# Todo: currently not used, remove
 class Hash
   def symbolize_keys
     result = {}

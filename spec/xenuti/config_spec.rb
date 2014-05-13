@@ -7,7 +7,7 @@
 require 'spec_helper'
 
 describe Xenuti::Config do
-  let(:config_string) { File.new(FIXTURES_DIR + '/test_config.yml').read }
+  let(:config_string) { File.new(CONFIG_FILEPATH).read }
   let(:config) { Xenuti::Config.from_yaml(config_string) }
 
   it 'should allow read access through symbols' do

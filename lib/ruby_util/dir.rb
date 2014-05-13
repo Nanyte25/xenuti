@@ -5,7 +5,7 @@
 # MIT license.
 
 class Dir
-  # Todo: add diff to dependencies
+  # TODO: add diff to dependencies
 
   def eql?(dir)
     self.class.compare(self, dir)
@@ -14,7 +14,7 @@ class Dir
   def self.compare(dir1, dir2)
     dir1 = dir1.to_path if dir1.is_a? Dir
     dir2 = dir2.to_path if dir2.is_a? Dir
-    %x{diff #{dir1} #{dir2}}
-    return $? == 0
+    %x(diff #{dir1} #{dir2})
+    $? == 0
   end
 end

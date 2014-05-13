@@ -8,13 +8,12 @@ require 'safe_yaml'
 require 'ruby_util/hash'
 
 class Xenuti::Config < Hash
-
   def initialize(hash)
     self.merge! hash.deep_symbolize_keys
   end
 
   def self.from_yaml(yaml_string)
-    self.new(YAML.load(yaml_string, :safe => true))
+    new(YAML.load(yaml_string, safe: true))
   end
 
   def [](key)
@@ -28,21 +27,23 @@ class Xenuti::Config < Hash
     super(key, val)
   end
 
+  # rubocop:disable NonNilCheck
   def method_missing(name, *args, &block)
     if name =~ /=\Z/
       define_accessor name
-      self.send(name, *args, &block)
+      send(name, *args, &block)
     elsif !self[name].nil?
       define_accessor name
       self[name] = self.class.new(self[name]) if self[name].is_a?(Hash)
-      self.send(name, *args, &block)
+      send(name, *args, &block)
     else
       fail(NoMethodError, "unknown configuration root #{name}", caller)
     end
   end
+  # rubocop:enable NonNilCheck
 
   def define_accessor(name)
-    name = name.to_s.sub('=','')
+    name = name.to_s.sub('=', '')
 
     define_singleton_method name do
       self[name]

@@ -5,9 +5,8 @@
 # MIT license.
 
 class Xenuti::Repository
-
   class << self
-    # Todo: add git to dependencies
+    # TODO: add git to dependencies
 
     def fetch_source(config, destination)
       if git_repo?(destination)
@@ -18,16 +17,16 @@ class Xenuti::Repository
     end
 
     def clone(source, destination)
-      %x{git clone #{source} #{destination} 2>&1}
-      fail RuntimeError.new if $?.exitstatus != 0
+      %x(git clone #{source} #{destination} 2>&1)
+      fail 'Git clone failed' if $?.exitstatus != 0
     end
 
     def update(git_repo)
       cwd = Dir.pwd
       begin
         Dir.chdir git_repo
-        %x{git pull 2>&1}
-        fail RuntimeError.new if $?.exitstatus != 0
+        %x(git pull 2>&1)
+        fail 'Git pull failed' if $?.exitstatus != 0
       ensure
         Dir.chdir cwd
       end
@@ -37,12 +36,9 @@ class Xenuti::Repository
       cwd = Dir.pwd
       begin
         Dir.chdir dir
-        %x{git status 2>&1}
-        if $?.exitstatus == 0
-          return true
-        else
-          return false
-        end
+        %x(git status 2>&1)
+        return true if $?.exitstatus == 0
+        return false
       ensure
         Dir.chdir cwd
       end

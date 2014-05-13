@@ -9,3 +9,5 @@ end
 
 require 'xenuti/config'
 require 'xenuti/repository'
+require 'xenuti/processor'
+require 'xenuti/scanners/brakeman'

@@ -14,7 +14,7 @@ describe Dir do
     end
 
     it 'should return false when comparing to different directory' do
-      Dir.new(FIXTURES_DIR).should_not be_eql(Dir.new(FIXTURES_DIR + "/../"))
+      Dir.new(FIXTURES_DIR).should_not be_eql(Dir.new(FIXTURES_DIR + '/../'))
     end
   end
 
@@ -26,9 +26,9 @@ describe Dir do
     end
 
     it 'should return false when comparing different directories' do
-      Dir.compare(FIXTURES_DIR, FIXTURES_DIR + "/../").should be_false
-      Dir.compare(Dir.new(FIXTURES_DIR), FIXTURES_DIR + "/../").should be_false
-      Dir.compare(FIXTURES_DIR, Dir.new(FIXTURES_DIR + "/../")).should be_false
+      Dir.compare(FIXTURES_DIR, FIXTURES_DIR + '/../').should be_false
+      Dir.compare(Dir.new(FIXTURES_DIR), FIXTURES_DIR + '/../').should be_false
+      Dir.compare(FIXTURES_DIR, Dir.new(FIXTURES_DIR + '/../')).should be_false
     end
 
   end

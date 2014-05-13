@@ -11,31 +11,31 @@ describe Xenuti::Config do
   let(:config) { Xenuti::Config.from_yaml(config_string) }
 
   it 'should allow read access through symbols' do
-    c = Xenuti::Config.new({:a => 1, 'b' => 2})
+    c = Xenuti::Config.new(:a => 1, 'b' => 2)
     c[:a].should be_eql(1)
     c[:b].should be_eql(2)
   end
 
   it 'should allow read access through strings' do
-    c = Xenuti::Config.new({:a => 1, 'b' => 2})
+    c = Xenuti::Config.new(:a => 1, 'b' => 2)
     c['a'].should be_eql(1)
     c['b'].should be_eql(2)
   end
 
   it 'should allow write access through symbols' do
-    c = Xenuti::Config.new({:a => 1, 'b' => 2})
+    c = Xenuti::Config.new(:a => 1, 'b' => 2)
     c[:b] = 3
     c['b'].should be_eql(3)
   end
 
   it 'should allow write access through strings' do
-    c = Xenuti::Config.new({:a => 1, 'b' => 2})
+    c = Xenuti::Config.new(:a => 1, 'b' => 2)
     c['a'] = 3
     c[:a].should be_eql(3)
   end
 
   it 'should convert all keys to symbols' do
-    c = Xenuti::Config.new({"a" => 1, "b" => {"c" => 3}})
+    c = Xenuti::Config.new('a' => 1, 'b' => { 'c' => 3 })
     c[:a].should be_eql(1)
     c[:b][:c].should be_eql(3)
   end
@@ -58,12 +58,12 @@ describe Xenuti::Config do
 
   it 'should be hash-like' do
     expected = {
-      :general => { :repo => 'git@example.com:user/repo' },
-      :brakeman => {
-        :enabled => true,
-        :options => { :app_path => "/some/path" }
+      general: { repo: 'git@example.com:user/repo' },
+      brakeman: {
+        enabled: true,
+        options: { app_path: '/some/path' }
         },
-      :codesake_dawn => { :enabled => false }
+      codesake_dawn: { enabled: false }
     }
     config.should be_eql(expected)
   end
@@ -75,7 +75,7 @@ describe Xenuti::Config do
   end
 
   it 'should allow adding hash as new entry' do
-    config.unknown = {:key => :value}
+    config.unknown = { key: :value }
     config.unknown[:key].should be_eql(:value)
   end
 end

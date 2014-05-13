@@ -41,15 +41,15 @@ describe Xenuti::Repository do
     end
 
     it 'should fail when destination is not empty' do
-      expect {
+      expect do
         Xenuti::Repository.clone(ORIGIN_REPO, FIXTURES_DIR)
-      }.to raise_error RuntimeError
+      end.to raise_error RuntimeError
     end
 
     it 'should fail when source is not a git repo' do
-      expect {
+      expect do
         Xenuti::Repository.clone('/tmp', FIXTURES_DIR)
-      }.to raise_error RuntimeError
+      end.to raise_error RuntimeError
     end
   end
 
@@ -61,9 +61,9 @@ describe Xenuti::Repository do
 
     it 'should fail when argument is not a git repo' do
       old_pwd = Dir.pwd
-      expect { 
+      expect do
         Xenuti::Repository.update('/tmp')
-      }.to raise_error RuntimeError
+      end.to raise_error RuntimeError
       Dir.pwd.should be_eql(old_pwd) # we stay in the same directory
     end
   end

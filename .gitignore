@@ -1,2 +1,4 @@
 .rbenv-gemsets
 .ruby-version
+.ruby-gemset
+tmp

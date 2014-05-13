@@ -24,3 +24,7 @@ SpecialGlobalVars:
 UnusedBlockArgument:
   Exclude:
     - 'bin/xenuti'
+
+ConstantName:
+  Exclude:
+    - 'lib/xenuti/version.rb'

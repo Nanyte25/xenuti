@@ -1,5 +1,8 @@
+require './lib/xenuti/version'
+
 Gem::Specification.new do |gem|
   gem.name                      = 'xenuti'
+  gem.version                   = Xenuti::Version
   gem.authors                   = ['Jan Rusnacko']
   gem.email                     = 'rusnackoj@gmail.com'
   gem.files                     = `git ls-files`.split($INPUT_RECORD_SEPARATOR)

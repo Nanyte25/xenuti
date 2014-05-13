@@ -5,10 +5,5 @@
 # MIT license.
 
 module Xenuti
+  Version = '0.0.1'
 end
-
-require 'xenuti/version'
-require 'xenuti/config'
-require 'xenuti/repository'
-require 'xenuti/scanners/brakeman'
-require 'xenuti/processor'

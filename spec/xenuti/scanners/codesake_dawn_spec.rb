@@ -11,7 +11,7 @@ describe Xenuti::CodesakeDawn do
   let(:config) { Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read) }
   let(:codesake_dawn) { Xenuti::CodesakeDawn.new(config) }
 
-  it_behaves_like 'static_analyzer', Xenuti::Brakeman
+  it_behaves_like 'static_analyzer', Xenuti::CodesakeDawn
 
   it 'should load config file' do
     expect(config.codesake_dawn.enabled).to be_false

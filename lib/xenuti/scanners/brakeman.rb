@@ -6,14 +6,14 @@
 
 class Xenuti::Brakeman
   include Xenuti::StaticAnalyzer
-  attr_accessor :config, :tracker
+  attr_accessor :tracker
 
   # Check requirements for running this scanner - throws RuntimeError if any of
   # the requirements are not met. Returns true when requirements are met.
   def self.check_requirements(_config)
     # Verify brakeman is installed
     begin
-      require 'brakeman' unless loaded?('Brakeman')
+      require 'brakeman'
     rescue LoadError
       raise 'Could not load Brakeman'
     end
@@ -22,8 +22,7 @@ class Xenuti::Brakeman
   end
 
   def initialize(cfg)
-    @config = cfg
-    check_config
+    super
     process_config
   end
 

@@ -5,13 +5,11 @@
 # MIT license.
 
 module Xenuti::StaticAnalyzer
-  def loaded?(string)
-    begin
-      Module.const_get(string)
-    rescue NameError
-      return false
-    end
-    true
+  attr_accessor :config
+
+  def initialize(cfg)
+    @config = cfg
+    check_config
   end
 
   def enabled?

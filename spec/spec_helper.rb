@@ -4,6 +4,9 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
+require 'simplecov'
+SimpleCov.start
+
 require 'xenuti'
 
 RSpec.configure do |config|

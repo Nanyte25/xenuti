@@ -21,15 +21,15 @@ describe Xenuti::Repository do
     it 'should check out repo to the latest version' do
       Dir.mktmpdir do |tmpdir|
         Xenuti::Repository.fetch_source(config, tmpdir)
-        Dir.compare(config.general.repo, tmpdir).should be_true
-        config.general.source.should be_eql(tmpdir)
+        expect(Dir.compare(config.general.repo, tmpdir)).to be_true
+        expect(config.general.source).to be_eql(tmpdir)
       end
     end
 
     it 'should update repo to the latest version' do
       # OUTDATED_REPO is one commit behind ORIGIN_REPO
       Xenuti::Repository.fetch_source(config, OUTDATED_REPO)
-      Dir.compare(config.general.repo, OUTDATED_REPO).should be_true
+      expect(Dir.compare(config.general.repo, OUTDATED_REPO)).to be_true
     end
   end
 
@@ -37,19 +37,19 @@ describe Xenuti::Repository do
     it 'should clone to empty directory' do
       Dir.mktmpdir do |tmpdir|
         Xenuti::Repository.clone(ORIGIN_REPO, tmpdir)
-        Dir.new(ORIGIN_REPO).should be_eql(Dir.new(tmpdir))
+        expect(Dir.new(ORIGIN_REPO)).to be_eql(Dir.new(tmpdir))
       end
     end
 
     it 'should fail when destination is not empty' do
       expect do
-        Xenuti::Repository.clone(ORIGIN_REPO, FIXTURES_DIR)
+        Xenuti::Repository.clone(ORIGIN_REPO, FIXTURES)
       end.to raise_error RuntimeError
     end
 
     it 'should fail when source is not a git repo' do
       expect do
-        Xenuti::Repository.clone('/tmp', FIXTURES_DIR)
+        Xenuti::Repository.clone('/tmp', FIXTURES)
       end.to raise_error RuntimeError
     end
   end
@@ -65,25 +65,25 @@ describe Xenuti::Repository do
       expect do
         Xenuti::Repository.update('/tmp')
       end.to raise_error RuntimeError
-      Dir.pwd.should be_eql(old_pwd) # we stay in the same directory
+      expect(Dir.pwd).to be_eql(old_pwd) # we stay in the same directory
     end
   end
 
   context 'git_repo?' do
     it 'should return true when git repo is passed' do
       old_pwd = Dir.pwd
-      Xenuti::Repository.git_repo?(ORIGIN_REPO).should be_true
-      Dir.pwd.should be_eql(old_pwd)
+      expect(Xenuti::Repository.git_repo?(ORIGIN_REPO)).to be_true
+      expect(Dir.pwd).to be_eql(old_pwd)
     end
 
     it 'should return false when argument is not a git repo' do
       old_pwd = Dir.pwd
-      Xenuti::Repository.git_repo?('/tmp').should be_false
-      Dir.pwd.should be_eql(old_pwd)
+      expect(Xenuti::Repository.git_repo?('/tmp')).to be_false
+      expect(Dir.pwd).to be_eql(old_pwd)
     end
 
     it 'should return false when argument is non-existent dir' do
-      Xenuti::Repository.git_repo?('/akjfdjhadkjvc').should be_false
+      expect(Xenuti::Repository.git_repo?('/akjfdjhadkjvc')).to be_false
     end
   end
 end

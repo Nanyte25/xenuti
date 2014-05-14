@@ -5,14 +5,13 @@
 # MIT license.
 
 module Xenuti::StaticAnalyzer
-
   def loaded?(string)
     begin
       Module.const_get(string)
     rescue NameError
       return false
     end
-    return true
+    true
   end
 
   def enabled?

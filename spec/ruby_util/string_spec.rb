@@ -13,6 +13,6 @@ describe 'String' do
     Line
       indented line
     EOF
-    s.unindent.should be_eql("Line\n  indented line\n")
+    expect(s.unindent).to be_eql("Line\n  indented line\n")
   end
 end

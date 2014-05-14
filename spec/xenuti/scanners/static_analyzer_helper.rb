@@ -10,23 +10,23 @@ shared_examples 'static_analyzer' do |analyzer_klass|
 
   context 'loaded?' do
     it 'returns false when queried class is not loaded' do
-      analyzer.loaded?('AbsolutelyDoesNotExists').should be_false
+      expect(analyzer.loaded?('AbsolutelyDoesNotExists')).to be_false
     end
 
     it 'returns true when queried class is loaded' do
-      analyzer.loaded?('Object').should be_true
+      expect(analyzer.loaded?('Object')).to be_true
     end
   end
 
   context 'enabled?' do
     it 'can be enabled' do
       config[analyzer.name][:enabled] = true
-      analyzer.enabled?.should be_true
+      expect(analyzer.enabled?).to be_true
     end
 
     it 'can be disabled' do
       config[analyzer.name][:enabled] = false
-      analyzer.enabled?.should be_false
+      expect(analyzer.enabled?).to be_false
     end
   end
 
@@ -43,7 +43,7 @@ shared_examples 'static_analyzer' do |analyzer_klass|
     end
 
     it 'should pass when source is present in config' do
-      analyzer.check_config.should be_true
+      expect(analyzer.check_config).to be_true
     end
   end
 end

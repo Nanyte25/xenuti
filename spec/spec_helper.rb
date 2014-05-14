@@ -11,5 +11,5 @@ RSpec.configure do |config|
   config.formatter = :documentation
 end
 
-FIXTURES_DIR = File.expand_path('../fixtures', __FILE__)
-CONFIG_FILEPATH = FIXTURES_DIR + '/config.yml'
+FIXTURES = File.expand_path('../fixtures', __FILE__)
+CONFIG_FILEPATH = FIXTURES + '/config.yml'

@@ -9,20 +9,20 @@ require 'ruby_util/hash'
 
 describe Hash do
   it 'should symbolize_keys correctly' do
-    { 'a' => 1, 'b' => 2 }.symbolize_keys.should be_eql(a: 1, b: 2)
+    expect({ 'a' => 1, 'b' => 2 }.symbolize_keys).to be_eql(a: 1, b: 2)
   end
 
   it 'should symbolize_keys! correctly' do
     h = { 'a' => 1, 'b' => 2 }.symbolize_keys!
-    h.should be_eql(a: 1, b: 2)
+    expect(h).to be_eql(a: 1, b: 2)
   end
 
   it 'should deep_symbolize_keys correctly' do
-    { 'a' => { 'b' => 2 } }.deep_symbolize_keys.should be_eql(a: { b: 2 })
+    expect({ 'a' => { 'b' => 2 } }.deep_symbolize_keys).to be_eql(a: { b: 2 })
   end
 
   it 'should deep_symbolize_keys! correctly' do
     h = { 'a' => { 'b' => 2 } }.deep_symbolize_keys!
-    h.should be_eql(a: { b: 2 })
+    expect(h).to be_eql(a: { b: 2 })
   end
 end

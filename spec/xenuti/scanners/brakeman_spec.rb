@@ -14,7 +14,7 @@ describe Xenuti::Brakeman do
   it_behaves_like 'static_analyzer', Xenuti::Brakeman
 
   it 'should load config file' do
-    config.brakeman.options.quiet.should be_true
+    expect(config.brakeman.options.quiet).to be_true
   end
 
   context 'run_scan' do
@@ -28,7 +28,7 @@ describe Xenuti::Brakeman do
     it 'should set up app_path for brakeman from source' do
       config.general.source = '/some/path'
       brakeman.process_config
-      config.brakeman.options.app_path.should be_eql('/some/path')
+      expect(config.brakeman.options.app_path).to be_eql('/some/path')
     end
   end
 end

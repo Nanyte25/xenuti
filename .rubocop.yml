@@ -2,7 +2,7 @@
 AllCops:
   Exclude:
     - 'tmp/**'
-    - 'spec/fixtures/**'
+    - 'spec/fixtures/**/*'
 
 Encoding:
   Enabled: false

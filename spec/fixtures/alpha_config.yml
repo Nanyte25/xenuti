@@ -1,0 +1,11 @@
+---
+general:
+  repo: /tmp/d20140514-10265-1lgdh8b
+  tmpdir: /tmp/d20140514-10265-nkbdov
+brakeman:
+  enabled: true
+  options:
+codesake_dawn:
+  enabled: true
+bundler_audit:
+  enabled: true

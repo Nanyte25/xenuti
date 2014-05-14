@@ -7,9 +7,11 @@
 require 'safe_yaml'
 require 'ruby_util/hash'
 require 'ruby_util/hash_with_method_access'
+require 'ruby_util/hash_with_constraints'
 
 class Xenuti::Config < Hash
   include HashWithMethodAccess
+  include HashWithConstraints
 
   def initialize(hash)
     self.merge! hash.deep_symbolize_keys

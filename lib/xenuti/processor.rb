@@ -9,7 +9,8 @@ require 'xenuti/repository'
 class Xenuti::Processor
   attr_accessor :config
 
-  STATIC_ANALYZERS = [Xenuti::Brakeman, Xenuti::CodesakeDawn]
+  STATIC_ANALYZERS = [
+    Xenuti::Brakeman, Xenuti::CodesakeDawn, Xenuti::BundlerAudit]
 
   def initialize(config)
     @config = config

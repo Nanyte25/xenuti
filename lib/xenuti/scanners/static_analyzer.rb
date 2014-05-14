@@ -9,6 +9,7 @@ module Xenuti::StaticAnalyzer
 
   def initialize(cfg)
     @config = cfg
+    self.class.check_requirements(@config)
     check_config
   end
 

@@ -27,6 +27,9 @@ class Xenuti::CodesakeDawn
 
   def run_scan
     fail 'CodesakeDawn is disabled' unless config.codesake_dawn.enabled
+    gemfile_lock_path = config.general.source + '/Gemfile.lock'
+    fail 'Cannot find Gemfile.lock' unless File.exist?(gemfile_lock_path)
+
     @output = %x(dawn #{config.general.source})
   end
 

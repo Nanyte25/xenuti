@@ -5,56 +5,13 @@
 # MIT license.
 
 require 'spec_helper'
+require 'ruby_util/hash_with_method_access_shared'
 
 describe Xenuti::Config do
   let(:config_string) { File.new(CONFIG_FILEPATH).read }
   let(:config) { Xenuti::Config.from_yaml(config_string) }
 
-  it 'should allow read access through symbols' do
-    c = Xenuti::Config.new(:a => 1, 'b' => 2)
-    expect(c[:a]).to be_eql(1)
-    expect(c[:b]).to be_eql(2)
-  end
-
-  it 'should allow read access through strings' do
-    c = Xenuti::Config.new(:a => 1, 'b' => 2)
-    expect(c['a']).to be_eql(1)
-    expect(c['b']).to be_eql(2)
-  end
-
-  it 'should allow write access through symbols' do
-    c = Xenuti::Config.new(:a => 1, 'b' => 2)
-    c[:b] = 3
-    expect(c['b']).to be_eql(3)
-  end
-
-  it 'should allow write access through strings' do
-    c = Xenuti::Config.new(:a => 1, 'b' => 2)
-    c['a'] = 3
-    expect(c[:a]).to be_eql(3)
-  end
-
-  it 'should convert all keys to symbols' do
-    c = Xenuti::Config.new('a' => 1, 'b' => { 'c' => 3 })
-    expect(c[:a]).to be_eql(1)
-    expect(c[:b][:c]).to be_eql(3)
-  end
-
-  it 'should allow access to entries by calling methods' do
-    expect(config.general.repo).to be_eql 'git@example.com:user/repo'
-    expect(config.brakeman.enabled).to be_true
-    expect(config.codesake_dawn.enabled).to be_false
-  end
-
-  it 'should allow changes in config via hash' do
-    config[:codesake_dawn][:enabled] = true
-    expect(config[:codesake_dawn][:enabled]).to be_true
-  end
-
-  it 'should allow changes in config via methods' do
-    config.brakeman.enabled = false
-    expect(config.brakeman.enabled).to be_false
-  end
+  it_behaves_like 'hash with method access', Xenuti::Config
 
   it 'should be hash-like' do
     expected = {
@@ -69,18 +26,4 @@ describe Xenuti::Config do
     expect(config).to be_eql(expected)
   end
 
-  it 'should allow adding new configuration entries via methods' do
-    config.unknown = :value
-    expect(config.unknown).to be_eql(:value)
-    expect(config[:unknown]).to be_eql(:value)
-  end
-
-  it 'should allow adding hash as new entry' do
-    config.unknown = { key: :value }
-    expect(config.unknown[:key]).to be_eql(:value)
-  end
-
-  it 'should throw NoMethodError when unspecified root is called' do
-    expect { config.unknown.conf.root }.to raise_error NoMethodError
-  end
 end

@@ -10,5 +10,6 @@ end
 require 'xenuti/version'
 require 'xenuti/config'
 require 'xenuti/repository'
+require 'xenuti/scanners/static_analyzer'
 require 'xenuti/scanners/brakeman'
 require 'xenuti/processor'

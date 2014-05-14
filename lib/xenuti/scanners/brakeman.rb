@@ -5,6 +5,7 @@
 # MIT license.
 
 class Xenuti::Brakeman
+  include Xenuti::StaticAnalyzer
   attr_accessor :config, :tracker
 
   # Check requirements for running this scanner - throws RuntimeError if any of
@@ -12,21 +13,11 @@ class Xenuti::Brakeman
   def self.check_requirements(_config)
     # Verify brakeman is installed
     begin
-      require 'brakeman' unless brakeman_loaded?
+      require 'brakeman' unless loaded?('Brakeman')
     rescue LoadError
       raise 'Could not load Brakeman'
     end
 
-    true
-  end
-
-  # Return true iff Brakeman is already loaded
-  def self.brakeman_loaded?
-    begin
-      Brakeman
-    rescue NameError
-      return false
-    end
     true
   end
 
@@ -36,8 +27,8 @@ class Xenuti::Brakeman
     process_config
   end
 
-  def enabled?
-    config.brakeman.enabled
+  def name
+    'brakeman'
   end
 
   def run_scan
@@ -50,15 +41,8 @@ class Xenuti::Brakeman
   end
 
   def process_config
-    # Set app_path for brakeman to the directory where we checked-out the code
+    # Set app_path for static analyzer to the directory where we checked-out
+    # the code
     config.brakeman.options = { app_path: config.general.source }
-  end
-
-  def check_config
-     # Verify that we have a path to app
-    unless config.general.source.is_a? String
-      fail 'Invalid source in config.general.source: #{config.general.source}.'
-    end
-    true
   end
 end

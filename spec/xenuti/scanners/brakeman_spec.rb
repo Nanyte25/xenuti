@@ -5,10 +5,13 @@
 # MIT license.
 
 require 'spec_helper'
+require 'xenuti/scanners/static_analyzer_helper'
 
 describe Xenuti::Brakeman do
   let(:config) { Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read) }
   let(:brakeman) { Xenuti::Brakeman.new(config) }
+
+  it_behaves_like 'static_analyzer', Xenuti::Brakeman
 
   it 'should load config file' do
     config.brakeman.options.quiet.should be_true
@@ -21,32 +24,11 @@ describe Xenuti::Brakeman do
     end
   end
 
-  context 'check_config' do
-    it 'should fail if source is not present in config' do
-      config.general.source = nil
-      expect do
-        brakeman.check_config
-      end.to raise_error RuntimeError
-      config.general = nil
-      expect do
-        brakeman.check_config
-      end.to raise_error NoMethodError
-    end
-
-    it 'should pass when app_path is present and brakeman is installed' do
-      brakeman.check_config.should be_true
-    end
-  end
-
-  context 'enabled?' do
-    it 'can be enabled' do
-      config.brakeman.enabled = true
-      brakeman.enabled?.should be_true
-    end
-
-    it 'can be disabled' do
-      config.brakeman.enabled = false
-      brakeman.enabled?.should be_false
+  context 'process_config' do
+    it 'should set up app_path for brakeman from source' do
+      config.general.source = '/some/path'
+      brakeman.process_config
+      config.brakeman.options.app_path.should be_eql('/some/path')
     end
   end
 end

@@ -5,7 +5,7 @@
 # MIT license.
 
 require 'spec_helper'
-require 'xenuti/scanners/static_analyzer_helper'
+require 'xenuti/scanners/static_analyzer_shared'
 
 describe Xenuti::BundlerAudit do
   let(:config) { Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read) }

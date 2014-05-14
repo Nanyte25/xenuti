@@ -63,7 +63,8 @@ describe Xenuti::Config do
         enabled: true,
         options: { quiet: true }
         },
-      codesake_dawn: { enabled: false }
+      codesake_dawn: { enabled: false },
+      bundler_audit: { enabled: true }
     }
     expect(config).to be_eql(expected)
   end
@@ -77,5 +78,9 @@ describe Xenuti::Config do
   it 'should allow adding hash as new entry' do
     config.unknown = { key: :value }
     expect(config.unknown[:key]).to be_eql(:value)
+  end
+
+  it 'should throw NoMethodError when unspecified root is called' do
+    expect { config.unknown.conf.root }.to raise_error NoMethodError
   end
 end

@@ -22,7 +22,7 @@ describe Hash do
   end
 
   it 'should deep_symbolize_keys! correctly' do
-    h = { 'a' => { 'b' => 2 } }.deep_symbolize_keys!
-    expect(h).to be_eql(a: { b: 2 })
+    h = { 'a' => { 'b' => 2 }, 'c' => 3 }.deep_symbolize_keys!
+    expect(h).to be_eql(a: { b: 2 }, c: 3)
   end
 end

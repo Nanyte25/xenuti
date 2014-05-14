@@ -11,8 +11,8 @@ class Xenuti::CodesakeDawn
   # Check requirements for running this scanner - throws RuntimeError if any of
   # the requirements are not met. Returns true when requirements are met.
   def self.check_requirements(_config)
-    # Verify CodesakeDawn is installed
-    %x(dawn -v)
+    # This is much, much faster then %x(dawn -v)
+    %x(whereis dawn | grep '/')
     fail 'CodesakeDawn not installed.' if $?.exitstatus != 0
     true
   end

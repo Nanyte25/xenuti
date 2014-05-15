@@ -22,5 +22,6 @@ module HashWithConstraints
 
   def verify(&block)
     instance_exec(self, &block)
+    true
   end
 end

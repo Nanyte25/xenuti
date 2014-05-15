@@ -53,12 +53,12 @@ describe 'hash with constraints' do
 
   context 'verify' do
     it 'should return true when constraints passed are met' do
-      expect do
+      expect(
         hashc.verify do
           fail unless self[:a].is_a? Integer
           fail unless self['d'].eql? 3
         end
-      end.to be_true
+      ).to be_true
     end
 
     it 'should raise error when constraints passed are not met' do

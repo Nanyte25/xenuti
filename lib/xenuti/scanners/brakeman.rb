@@ -4,22 +4,21 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
-require 'brakeman'
-require 'brakeman/version'
+require 'json'
 
 class Xenuti::Brakeman
   include Xenuti::StaticAnalyzer
-  attr_accessor :tracker
 
   # Check requirements for running this scanner - throws RuntimeError if any of
   # the requirements are not met. Returns true when requirements are met.
   def self.check_requirements(_config)
+    %x(whereis brakeman | grep '/')
+    fail 'Brakeman not installed.' if $?.exitstatus != 0
     true
   end
 
   def initialize(cfg)
     super
-    process_config
   end
 
   def name
@@ -27,22 +26,21 @@ class Xenuti::Brakeman
   end
 
   def version
-    Brakeman::Version
+    @version ||= %x(brakeman -v).match(/\d\.\d\.\d/).to_s
   end
 
   def run_scan
     fail 'Brakeman is disabled' unless config.brakeman.enabled
-    @tracker = Brakeman.run config.brakeman.options
+    @start_time = Time.now
+    @results = %x(brakeman -q -f json #{config.general.source})
+    @end_time = Time.now
   end
 
-  def report
-    tracker.report
-  end
-
-  def process_config
-    # Set app_path for static analyzer to the directory where we checked-out
-    # the code
-    config.brakeman.options ||= {}
-    config.brakeman.options.app_path = config.general.source
+  def parse_results(json_output)
+    report = Xenuti::Report.new
+    JSON.load(json_output)['warnings'].each do |warning|
+      report.warnings << warning
+    end
+    report
   end
 end

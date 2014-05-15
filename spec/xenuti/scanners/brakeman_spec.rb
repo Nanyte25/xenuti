@@ -37,12 +37,4 @@ describe Xenuti::Brakeman do
       expect { brakeman.run_scan }.to raise_error(RuntimeError)
     end
   end
-
-  describe '#process_config' do
-    it 'should set up app_path for brakeman from source' do
-      config.general.source = '/some/path'
-      brakeman.process_config
-      expect(config.brakeman.options.app_path).to be_eql('/some/path')
-    end
-  end
 end

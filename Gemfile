@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'safe_yaml'
 gem 'commander'
+gem 'json'
 
 group :development, :test do
   gem 'rubocop'

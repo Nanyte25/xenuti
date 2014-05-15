@@ -16,10 +16,7 @@ describe Xenuti::Config do
   it 'should be hash-like' do
     expected = {
       general: { repo: 'git@example.com:user/repo', source: '/some/path' },
-      brakeman: {
-        enabled: true,
-        options: { quiet: true }
-        },
+      brakeman: { enabled: true },
       codesake_dawn: { enabled: false },
       bundler_audit: { enabled: true }
     }

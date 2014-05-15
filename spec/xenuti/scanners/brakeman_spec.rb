@@ -15,7 +15,7 @@ describe Xenuti::Brakeman do
 
   describe '#initialize' do
     it 'should load config file' do
-      expect(brakeman.config.brakeman.options.quiet).to be_true
+      expect(brakeman.config.brakeman.enabled).to be_true
     end
   end
 

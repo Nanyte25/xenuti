@@ -4,8 +4,6 @@ general:
   source: '/some/path'
 brakeman:
   enabled: true
-  options:
-    quiet: true
 codesake_dawn:
   enabled: false
 bundler_audit:

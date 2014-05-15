@@ -32,7 +32,6 @@ File.open(FIXTURES + '/alpha_config.yml', 'w+') do |file|
       tmpdir: #{ALPHA_TMPDIR}
     brakeman:
       enabled: true
-      options:
     codesake_dawn:
       enabled: true
     bundler_audit:

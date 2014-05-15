@@ -6,14 +6,16 @@
 
 require 'rspec/expectations'
 
-shared_examples 'hash with constraints' do |klass|
-  let(:hashc) { klass.new(:a => 1, 'b' => { c: 2 }, 'd' => 3) }
+describe 'hash with constraints' do
+  let(:hashc) do
+    { :a => 1, 'b' => { c: 2 }, 'd' => 3 }.extend(HashWithConstraints)
+  end
 
   context 'check' do
     it 'should return true when constraints are met' do
       hashc.constraints do
         fail unless self[:a].is_a? Integer
-        fail unless self[:d].eql? 3
+        fail unless self['d'].eql? 3
       end
       expect(hashc.check).to be_true
     end
@@ -21,7 +23,7 @@ shared_examples 'hash with constraints' do |klass|
     it 'should raise error when constraints are not met' do
       hashc.constraints do
         fail unless self[:a].is_a? Integer
-        fail unless self[:d].eql? 4
+        fail unless self['d'].eql? 4
       end
       expect { hashc.check }.to raise_error RuntimeError
     end
@@ -33,7 +35,7 @@ shared_examples 'hash with constraints' do |klass|
         fail unless self[:a].is_a? Integer
       end
       hashc.constraints do
-        fail unless self[:d].eql? 3
+        fail unless self['d'].eql? 3
       end
       expect(hashc.check).to be_true
     end
@@ -43,7 +45,7 @@ shared_examples 'hash with constraints' do |klass|
         fail unless self[:a].is_a? Integer
       end
       hashc.constraints do
-        fail unless self[:d].eql? 4
+        fail unless self['d'].eql? 4
       end
       expect { hashc.check }.to raise_error RuntimeError
     end
@@ -54,7 +56,7 @@ shared_examples 'hash with constraints' do |klass|
       expect do
         hashc.verify do
           fail unless self[:a].is_a? Integer
-          fail unless self[:d].eql? 3
+          fail unless self['d'].eql? 3
         end
       end.to be_true
     end
@@ -63,7 +65,7 @@ shared_examples 'hash with constraints' do |klass|
       expect do
         hashc.verify do
           fail unless self[:a].is_a? Integer
-          fail unless self[:d].eql? 4
+          fail unless self['d'].eql? 4
         end
       end.to raise_error RuntimeError
     end

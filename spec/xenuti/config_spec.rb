@@ -6,14 +6,12 @@
 
 require 'spec_helper'
 require 'ruby_util/hash_with_method_access_shared'
-require 'ruby_util/hash_with_constraints_shared'
 
 describe Xenuti::Config do
   let(:config_string) { File.new(CONFIG_FILEPATH).read }
   let(:config) { Xenuti::Config.from_yaml(config_string) }
 
   it_behaves_like 'hash with method access', Xenuti::Config
-  it_behaves_like 'hash with constraints', Xenuti::Config
 
   it 'should be hash-like' do
     expected = {

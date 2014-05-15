@@ -4,6 +4,8 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
+require 'xenuti/report'
+
 module Xenuti::StaticAnalyzer
   attr_accessor :config
 
@@ -18,9 +20,8 @@ module Xenuti::StaticAnalyzer
   end
 
   def check_config
-    # Verify that we have a path to app
-    unless config.general.source.is_a? String
-      fail 'Invalid source in config.general.source: #{config.general.source}.'
+    config.verify do
+      fail unless general.source.is_a? String
     end
     true
   end

@@ -4,24 +4,23 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
-require 'rspec/expectations'
 # TODO: doc
 module HashWithConstraints
-  include RSpec::Expectations
-
   # rubocop:disable TrivialAccessors
   def constraints(&constraints)
-    @constraints = constraints
+    @constraints ||= []
+    @constraints << constraints
   end
   # rubocop:enable TrivialAccessors
 
-  # rubocop:disable RedundantBegin
   def check
-    begin
-      @constraints.call(self)
-    rescue RSpec::Expectations::ExpectationNotMetError
-      raise 'One of the constraints is not met.'
+    @constraints.each do |c|
+      instance_exec(self, &c)
     end
+    true
   end
-  # rubocop:enable RedundantBegin
+
+  def verify(&block)
+    instance_exec(self, &block)
+  end
 end

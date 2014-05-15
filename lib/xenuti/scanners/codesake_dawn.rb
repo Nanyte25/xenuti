@@ -25,6 +25,10 @@ class Xenuti::CodesakeDawn
     'codesake_dawn'
   end
 
+  def version
+    @version ||= %x(dawn -v).match(/\d\.\d\.\d/).to_s
+  end
+
   def run_scan
     fail 'CodesakeDawn is disabled' unless config.codesake_dawn.enabled
     gemfile_lock_path = config.general.source + '/Gemfile.lock'

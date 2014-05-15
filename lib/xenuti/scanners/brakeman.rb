@@ -4,6 +4,9 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
+require 'brakeman'
+require 'brakeman/version'
+
 class Xenuti::Brakeman
   include Xenuti::StaticAnalyzer
   attr_accessor :tracker
@@ -11,13 +14,6 @@ class Xenuti::Brakeman
   # Check requirements for running this scanner - throws RuntimeError if any of
   # the requirements are not met. Returns true when requirements are met.
   def self.check_requirements(_config)
-    # Verify brakeman is installed
-    begin
-      require 'brakeman'
-    rescue LoadError
-      raise 'Could not load Brakeman'
-    end
-
     true
   end
 
@@ -28,6 +24,10 @@ class Xenuti::Brakeman
 
   def name
     'brakeman'
+  end
+
+  def version
+    Brakeman::Version
   end
 
   def run_scan
@@ -42,6 +42,7 @@ class Xenuti::Brakeman
   def process_config
     # Set app_path for static analyzer to the directory where we checked-out
     # the code
-    config.brakeman.options = { app_path: config.general.source }
+    config.brakeman.options ||= {}
+    config.brakeman.options.app_path = config.general.source
   end
 end

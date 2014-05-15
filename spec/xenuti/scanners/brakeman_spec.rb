@@ -13,18 +13,32 @@ describe Xenuti::Brakeman do
 
   it_behaves_like 'static_analyzer', Xenuti::Brakeman
 
-  it 'should load config file' do
-    expect(config.brakeman.options.quiet).to be_true
+  describe '#initialize' do
+    it 'should load config file' do
+      expect(brakeman.config.brakeman.options.quiet).to be_true
+    end
   end
 
-  context 'run_scan' do
+  describe '#name' do
+    it 'should be brakeman' do
+      expect(brakeman.name).to be_eql('brakeman')
+    end
+  end
+
+  describe '#version' do
+    it 'should return string with Brakeman version' do
+      expect(brakeman.version).to match(/\A\d\.\d\.\d\Z/)
+    end
+  end
+
+  describe '#run_scan' do
     it 'throws exception when called disabled' do
       config.brakeman.enabled = false
       expect { brakeman.run_scan }.to raise_error(RuntimeError)
     end
   end
 
-  context 'process_config' do
+  describe '#process_config' do
     it 'should set up app_path for brakeman from source' do
       config.general.source = '/some/path'
       brakeman.process_config

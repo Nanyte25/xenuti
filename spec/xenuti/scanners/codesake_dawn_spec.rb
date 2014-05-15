@@ -13,11 +13,29 @@ describe Xenuti::CodesakeDawn do
 
   it_behaves_like 'static_analyzer', Xenuti::CodesakeDawn
 
-  it 'should load config file' do
-    expect(config.codesake_dawn.enabled).to be_false
+  describe '#initialize' do
+    it 'should load config file' do
+      expect(codesake_dawn.config.codesake_dawn.enabled).to be_false
+    end
   end
 
-  context 'run_scan' do
+  describe '#name' do
+    it 'should be codesake_dawn' do
+      expect(codesake_dawn.name).to be_eql('codesake_dawn')
+    end
+  end
+
+  describe '#version' do
+    it 'should return string with CodesakeDawn version' do
+      # TODO: enable test again
+      # This test takes about 1 second, as invoking dawn is terribly slow,
+      # so commenting this out.
+
+      # expect(codesake_dawn.version).to match(/\A\d\.\d\.\d\Z/)
+    end
+  end
+
+  context '#run_scan' do
     it 'throws exception when called disabled' do
       config.codesake_dawn.enabled = false
       expect { codesake_dawn.run_scan }.to raise_error(RuntimeError)

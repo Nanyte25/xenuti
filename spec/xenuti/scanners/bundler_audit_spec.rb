@@ -13,14 +13,38 @@ describe Xenuti::BundlerAudit do
 
   it_behaves_like 'static_analyzer', Xenuti::BundlerAudit
 
-  it 'should load config file' do
-    expect(config.bundler_audit.enabled).to be_true
+  describe '#initialize' do
+    it 'should load config file' do
+      expect(bundler_audit.config.bundler_audit.enabled).to be_true
+    end
   end
 
-  context 'run_scan' do
+  describe '#name' do
+    it 'should be bundler_audit' do
+      expect(bundler_audit.name).to be_eql('bundler_audit')
+    end
+  end
+
+  describe '#version' do
+    it 'should return string with BundlerAudit version' do
+      expect(bundler_audit.version).to match(/\A\d\.\d\.\d\Z/)
+    end
+  end
+
+  describe '#run_scan' do
     it 'throws exception when called disabled' do
       config.bundler_audit.enabled = false
       expect { bundler_audit.run_scan }.to raise_error(RuntimeError)
+    end
+  end
+
+  describe '#parse_bundler_audit_results' do
+    let(:results) { [:a, :b, :c] }
+
+    it 'should return Xenuti::Report' do
+      expect(
+        bundler_audit.parse_bundler_audit_results(results)
+      ).to be_a(Xenuti::Report)
     end
   end
 end

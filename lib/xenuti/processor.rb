@@ -35,8 +35,10 @@ class Xenuti::Processor
   def run_static_analysis
     STATIC_ANALYZERS.each do |klass|
       analyzer = klass.new(config)
-      analyzer.run_scan if analyzer.enabled?
-      puts analyzer.report
+      if analyzer.enabled?
+        analyzer.run_scan
+        puts analyzer.report
+      end
     end
   end
 end

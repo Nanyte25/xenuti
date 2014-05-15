@@ -25,4 +25,22 @@ module Xenuti::StaticAnalyzer
     end
     true
   end
+
+  def report
+    if @report.nil?
+      @report = parse_results(@results)
+
+      # Fill in the metadata
+      @report.scan_info.start_time = @start_time
+      @report.scan_info.end_time = @end_time
+      @report.scan_info.duration = @end_time - @start_time
+      @report.scan_info.scanner_name = name
+      @report.scan_info.scanner_version = version
+    end
+
+    # Make sure the report is sane
+    @report.check
+
+    @report
+  end
 end

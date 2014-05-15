@@ -5,6 +5,7 @@
 # MIT license.
 
 require 'xenuti/repository'
+require 'pp'
 
 class Xenuti::Processor
   attr_accessor :config
@@ -37,7 +38,7 @@ class Xenuti::Processor
       analyzer = klass.new(config)
       if analyzer.enabled?
         analyzer.run_scan
-        puts analyzer.report
+        pp analyzer.report
       end
     end
   end

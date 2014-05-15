@@ -27,12 +27,12 @@ describe Xenuti::Config do
   end
 
   it 'constraints should work with method access' do
-    expect do
-      config.constraints do
+    expect(
+      config.verify do
         fail unless general.repo.is_a? String
         fail unless brakeman.enabled
-        fail if codesake_dawn.enaled
+        fail if codesake_dawn.enabled
       end
-    end.to be_true
+    ).to be_true
   end
 end

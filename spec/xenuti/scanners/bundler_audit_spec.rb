@@ -38,12 +38,12 @@ describe Xenuti::BundlerAudit do
     end
   end
 
-  describe '#parse_bundler_audit_results' do
+  describe '#parse_results' do
     let(:results) { [:a, :b, :c] }
 
     it 'should return Xenuti::Report' do
       expect(
-        bundler_audit.parse_bundler_audit_results(results)
+        bundler_audit.parse_results(results)
       ).to be_a(Xenuti::Report)
     end
   end

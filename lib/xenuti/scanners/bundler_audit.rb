@@ -6,7 +6,6 @@
 
 class Xenuti::BundlerAudit
   include Xenuti::StaticAnalyzer
-  attr_accessor :report
 
   def self.check_requirements(_config)
     # Verify brakeman is installed
@@ -28,6 +27,7 @@ class Xenuti::BundlerAudit
   end
 
   def version
+    # TODO: fix this to not call subshell
     @version ||= %x(bundle-audit version).match(/\d\.\d\.\d/).to_s
   end
 
@@ -39,29 +39,13 @@ class Xenuti::BundlerAudit
 
     scanner = Bundler::Audit::Scanner.new(config.general.source)
     @start_time = Time.now
-    @bundler_audit_results = scanner.scan
+    @results = scanner.scan
     @end_time = Time.now
   end
 
-  def report
-    report ||= parse_bundler_audit_results(@bundler_audit_results)
-
-    # Fill in the metadata
-    report.scan_info.start_time = @start_time
-    report.scan_info.end_time = @end_time
-    report.scan_info.duration = @end_time - @start_time
-    report.scan_info.scanner_name = name
-    report.scan_info.scanner_version = version
-
-    # Make sure the report is sane
-    report.check
-
-    report
-  end
-
-  def parse_bundler_audit_results(results)
+  def parse_results(res)
     report = Xenuti::Report.new
-    results.each do |warning|
+    res.each do |warning|
       report.warnings << warning
     end
     report

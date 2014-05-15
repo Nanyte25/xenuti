@@ -4,14 +4,14 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
+require 'json'
+
 class Xenuti::CodesakeDawn
   include Xenuti::StaticAnalyzer
-  attr_reader :output
 
   # Check requirements for running this scanner - throws RuntimeError if any of
   # the requirements are not met. Returns true when requirements are met.
   def self.check_requirements(_config)
-    # This is much, much faster then %x(dawn -v)
     %x(whereis dawn | grep '/')
     fail 'CodesakeDawn not installed.' if $?.exitstatus != 0
     true
@@ -34,10 +34,16 @@ class Xenuti::CodesakeDawn
     gemfile_lock_path = config.general.source + '/Gemfile.lock'
     fail 'Cannot find Gemfile.lock' unless File.exist?(gemfile_lock_path)
 
-    @output = %x(dawn #{config.general.source})
+    @start_time = Time.now
+    @results = %x(dawn -j #{config.general.source})
+    @end_time = Time.now
   end
 
-  def report
-    output
+  def parse_results(json_output)
+    report = Xenuti::Report.new
+    JSON.load(json_output.lines.to_a[1])['vulnerabilities'].each do |warning|
+      report.warnings << warning
+    end
+    report
   end
 end

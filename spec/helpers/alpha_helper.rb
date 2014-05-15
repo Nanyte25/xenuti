@@ -40,8 +40,7 @@ File.open(FIXTURES + '/alpha_config.yml', 'w+') do |file|
   EOF
 end
 
-puts "ALPHA_REPO: #{ALPHA_REPO}, TMPDIR: #{ALPHA_TMPDIR}"
-# at_exit do
-#   FileUtils.rm_rf(ALPHA_REPO)
-#   FileUtils.rm_rf(ALPHA_TMPDIR)
-# end
+at_exit do
+  FileUtils.rm_rf(ALPHA_REPO)
+  FileUtils.rm_rf(ALPHA_TMPDIR)
+end

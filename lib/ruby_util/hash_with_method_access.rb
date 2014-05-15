@@ -12,7 +12,8 @@ module HashWithMethodAccess
 
   def []=(key, val)
     key = key.to_sym if key.is_a? String
-    val = self.class.new(val) if val.is_a? Hash
+    # val = self.class.new(val) if val.is_a? Hash
+    val.extend(HashWithMethodAccess) if val.is_a? Hash
     super(key, val)
   end
 
@@ -23,7 +24,7 @@ module HashWithMethodAccess
       send(name, *args, &block)
     elsif !self[name].nil?
       define_accessor name
-      self[name] = self.class.new(self[name]) if self[name].is_a?(Hash)
+      self[name].extend(HashWithMethodAccess) if self[name].is_a?(Hash)
       send(name, *args, &block)
     else
       fail(NoMethodError, "unknown configuration root #{name}", caller)

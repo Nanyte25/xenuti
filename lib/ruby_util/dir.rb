@@ -17,4 +17,17 @@ class Dir
     %x(diff #{dir1} #{dir2})
     $? == 0
   end
+
+  # rubocop:disable RescueException
+  def self.jumpd(dir, &block)
+    old_pwd = Dir.pwd
+    begin
+      Dir.chdir dir
+      block.call
+    rescue Exception => e
+      Dir.chdir old_pwd
+      raise e
+    end
+  end
+  # rubocop:enable RescueException
 end

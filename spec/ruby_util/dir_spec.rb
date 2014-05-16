@@ -31,4 +31,26 @@ describe Dir do
       expect(Dir.compare(FIXTURES, Dir.new(FIXTURES + '/../'))).to be_false
     end
   end
+
+  context 'jumpd' do
+    it 'should execute block in new directory' do
+      Dir.jumpd('/tmp') do
+        expect(Dir.pwd).to be_eql('/tmp')
+      end
+    end
+
+    it 'should change back to old directory after block is executed' do
+      old_pwd = Dir.pwd
+      Dir.jumpd('/tmp') {}
+      expect(Dir.pwd).to be_eql(old_pwd)
+    end
+
+    it 'should let error propagate from block, but change back to old dir' do
+      old_pwd = Dir.pwd
+      expect do
+        Dir.jumpd('/tmp') { fail 'Nope!' if Dir.pwd == '/tmp' }
+      end.to raise_error RuntimeError
+      expect(Dir.pwd).to be_eql(old_pwd)
+    end
+  end
 end

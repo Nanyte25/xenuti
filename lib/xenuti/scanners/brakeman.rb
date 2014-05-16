@@ -9,6 +9,20 @@ require 'json'
 class Xenuti::Brakeman
   include Xenuti::StaticAnalyzer
 
+  class Warning < Xenuti::Warning
+    def initialize(hash)
+      super
+
+      constraints do
+        fail unless warning_type.is_a? String
+        fail unless warning_code.is_a? Integer
+        fail unless file.is_a? String
+        fail unless message.is_a? String
+        fail unless %w(High Medium Low).include? confidence
+      end
+    end
+  end
+
   # Check requirements for running this scanner - throws RuntimeError if any of
   # the requirements are not met. Returns true when requirements are met.
   def self.check_requirements(_config)
@@ -39,7 +53,7 @@ class Xenuti::Brakeman
   def parse_results(json_output)
     report = Xenuti::Report.new
     JSON.load(json_output)['warnings'].each do |warning|
-      report.warnings << warning
+      report.warnings << Warning.new(warning)
     end
     report
   end

@@ -14,8 +14,60 @@ describe Xenuti::Brakeman do
   let(:brakeman) { Xenuti::Brakeman.new(config) }
   let(:alpha_brakeman) { Xenuti::Brakeman.new(alpha_config) }
   let(:brakeman_output) { File.new(BRAKEMAN_OUTPUT).read }
+  let(:warning_hash) do
+    {
+      'warning_type'  => 'SQL Injection',
+      'warning_code'  => 46,
+      'message'       => 'Application contains SQL injection.',
+      'file'          => 'foo',
+      'confidence'    => 'High'
+    }
+  end
+  let(:warning) { Xenuti::Brakeman::Warning.new(warning_hash) }
 
   it_behaves_like 'static_analyzer', Xenuti::Brakeman
+
+  describe 'Warning' do
+    describe '#initialize' do
+      it 'should accept hash with correct fields' do
+        expect(warning.check).to be_true
+      end
+    end
+
+    describe '#check' do
+      it 'should require warning_type to be String' do
+        warning.warning_type = :SQL
+        expect { warning.check }.to raise_error RuntimeError
+      end
+
+      it 'should require warning_code to be Integer' do
+        warning.warning_code = '1'
+        expect { warning.check }.to raise_error RuntimeError
+      end
+
+      it 'should require message to be String' do
+        warning.message = Time.now
+        expect { warning.check }.to raise_error RuntimeError
+      end
+
+      it 'should require file to be String' do
+        warning.file = 1
+        expect { warning.check }.to raise_error RuntimeError
+      end
+
+      it 'should verify confidence is one of High, Medium, Low' do
+        warning.confidence = 'High'
+        expect(warning.check).to be_true
+        warning.confidence = 'Medium'
+        expect(warning.check).to be_true
+        warning.confidence = 'Low'
+        expect(warning.check).to be_true
+
+        warning.confidence = 'Higher'
+        expect { warning.check }.to raise_error RuntimeError
+      end
+    end
+  end
 
   describe '#initialize' do
     it 'should load config file' do
@@ -59,7 +111,8 @@ describe Xenuti::Brakeman do
     it 'should parse brakeman output into Xenuti::Report correctly' do
       report = brakeman.parse_results(brakeman_output)
       expect(report).to be_a(Xenuti::Report)
-      expect(report.warnings[1]['warning_code']).to be_eql(73)
+      expect(report.warnings[1]).to be_a(Xenuti::Brakeman::Warning)
+      expect(report.warnings[1][:warning_code]).to be_eql(73)
     end
   end
 end

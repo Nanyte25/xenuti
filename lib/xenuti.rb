@@ -10,6 +10,8 @@ end
 require 'xenuti/version'
 require 'xenuti/config'
 require 'xenuti/repository'
+require 'xenuti/report'
+require 'xenuti/warning'
 require 'xenuti/scanners/static_analyzer'
 require 'xenuti/scanners/brakeman'
 require 'xenuti/scanners/codesake_dawn'

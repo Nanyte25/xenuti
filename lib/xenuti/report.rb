@@ -12,7 +12,9 @@ class Xenuti::Report < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
+  # TODO: refactor
   # rubocop:disable MethodLength
+  # rubocop:disable CyclomaticComplexity
   def initialize
     self[:scan_info] = {
       start_time: nil, end_time: nil, duration: nil,
@@ -26,7 +28,11 @@ class Xenuti::Report < Hash
       fail unless scan_info.duration.is_a? Float
       fail unless scan_info.scanner_name.is_a? String
       fail unless scan_info.scanner_version.is_a? String
+      self[:warnings].each do |warning|
+        fail unless warning.is_a? Hash
+      end
     end
   end
   # rubocop:enable MethodLength
+  # rubocop:enable CyclomaticComplexity
 end

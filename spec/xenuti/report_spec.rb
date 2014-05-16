@@ -16,9 +16,11 @@ describe Xenuti::Report do
     r.scan_info.scanner_name = 'foo'
     r.scan_info.scanner_version = '1.2.3'
     r.scan_info.warnings = 2
-    r.warnings = [:a, :b]
+    r.warnings = [{ name: :failure }, { error: :occured }]
     r
   end
+
+  it_behaves_like 'hash with method access', Xenuti::Config
 
   describe 'check' do
     it 'should return true for valid report' do
@@ -47,6 +49,11 @@ describe Xenuti::Report do
 
     it 'should verify scanner_version is a String' do
       report.scan_info.scanner_version = :a
+      expect { report.check }.to raise_error RuntimeError
+    end
+
+    it 'should verify that all warnings are Hash' do
+      report.warnings[1] = 'serious issue'
       expect { report.check }.to raise_error RuntimeError
     end
   end

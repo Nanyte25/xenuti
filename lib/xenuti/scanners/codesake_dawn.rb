@@ -56,7 +56,7 @@ class Xenuti::CodesakeDawn
   def parse_results(json_output)
     report = Xenuti::Report.new
     JSON.load(json_output.lines.to_a[1])['vulnerabilities'].each do |warning|
-      report.warnings << warning
+      report.warnings << Warning.new(warning)
     end
     report
   end

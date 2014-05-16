@@ -123,6 +123,7 @@ describe Xenuti::CodesakeDawn do
     it 'should parse codesake_dawn output into Xenuti::Report correctly' do
       report = codesake_dawn.parse_results(codesake_dawn_output)
       expect(report).to be_a(Xenuti::Report)
+      expect(report.warnings[0]).to be_a(Xenuti::CodesakeDawn::Warning)
       expect(report.warnings[0]['name']).to be_eql('CVE-2012-6496')
     end
   end

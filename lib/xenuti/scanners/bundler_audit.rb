@@ -4,6 +4,8 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
+require 'ruby_util/dir'
+
 class Xenuti::BundlerAudit
   include Xenuti::StaticAnalyzer
 
@@ -59,7 +61,7 @@ class Xenuti::BundlerAudit
   # rubocop:disable MethodLength
   def parse_results(res)
     report = Xenuti::Report.new
-    res.scan(/Name:.*Solution:.*?\n/m).each do |w|
+    res.scan(/Name:.*?Solution:.*?\n/m).each do |w|
       warn_hash = {}
       warn_hash[:name] = w.match(/(?<=Name: ).*?\n/)[0].strip
       warn_hash[:version] = w.match(/(?<=Version: ).*?\n/)[0].strip

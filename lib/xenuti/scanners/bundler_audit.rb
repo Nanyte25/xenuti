@@ -7,14 +7,28 @@
 class Xenuti::BundlerAudit
   include Xenuti::StaticAnalyzer
 
-  def self.check_requirements(_config)
-    # Verify brakeman is installed
-    begin
-      require 'bundler/audit/scanner'
-    rescue LoadError
-      raise 'Could not load BundlerAudit'
-    end
+  class Warning < Xenuti::Warning
+    # TODO: refactor
+    # rubocop:disable CyclomaticComplexity
+    def initialize(hash)
+      super
 
+      constraints do
+        fail unless name.is_a? String
+        fail unless version.is_a? String
+        fail unless advisory.is_a? String
+        fail unless url.is_a? String
+        fail unless title.is_a? String
+        fail unless solution.is_a? String
+        fail unless %w(High Medium Low Unknown).include? criticality
+      end
+    end
+    # rubocop:enable CyclomaticComplexity
+  end
+
+  def self.check_requirements(_config)
+    %x(whereis bundle-audit | grep '/')
+    fail 'BundlerAudit not installed.' if $?.exitstatus != 0
     true
   end
 
@@ -33,22 +47,35 @@ class Xenuti::BundlerAudit
 
   def run_scan
     fail 'BundlerAudit is disabled' unless config.bundler_audit.enabled
+    fail 'Cannot find Gemfile.lock' unless gemfile?(config.general.source)
 
-    gemfile_lock_path = config.general.source + '/Gemfile.lock'
-    fail 'Cannot find Gemfile.lock' unless File.exist?(gemfile_lock_path)
-
-    scanner = Bundler::Audit::Scanner.new(config.general.source)
-    @start_time = Time.now
-    @results = scanner.scan
-    @end_time = Time.now
+    Dir.jumpd(config.general.source) do
+      @start_time = Time.now
+      @results = %x(bundle-audit)
+      @end_time = Time.now
+    end
   end
 
+  # rubocop:disable MethodLength
   def parse_results(res)
     report = Xenuti::Report.new
-    res.each do |warning|
-      report.warnings << warning
+    res.scan(/Name:.*Solution:.*?\n/m).each do |w|
+      warn_hash = {}
+      warn_hash[:name] = w.match(/(?<=Name: ).*?\n/)[0].strip
+      warn_hash[:version] = w.match(/(?<=Version: ).*?\n/)[0].strip
+      warn_hash[:advisory] = w.match(/(?<=Advisory: ).*?\n/)[0].strip
+      warn_hash[:criticality] = w.match(/(?<=Criticality: ).*?\n/)[0].strip
+      warn_hash[:url] = w.match(/(?<=URL: ).*?\n/)[0].strip
+      warn_hash[:title] = w.match(/(?<=Title: ).*?\n/)[0].strip
+      warn_hash[:solution] = w.match(/(?<=Solution: ).*?\n/)[0].strip
+      report.warnings << Warning.new(warn_hash)
     end
     report
+  end
+  # rubocop:enable MethodLength
+
+  def gemfile?(app_path)
+    File.exist?(app_path + '/Gemfile.lock')
   end
 
   def update_database

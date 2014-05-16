@@ -18,3 +18,4 @@ FIXTURES = File.expand_path('../fixtures', __FILE__)
 CONFIG_FILEPATH = FIXTURES + '/config.yml'
 BRAKEMAN_OUTPUT = FIXTURES + '/brakeman_output_json'
 CODESAKE_DAWN_OUTPUT = FIXTURES + '/codesake_dawn_output_json'
+BUNDLER_AUDIT_OUTPUT = FIXTURES + '/bundler_audit_output'

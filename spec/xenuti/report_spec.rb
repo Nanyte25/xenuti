@@ -16,7 +16,10 @@ describe Xenuti::Report do
     r.scan_info.scanner_name = 'foo'
     r.scan_info.scanner_version = '1.2.3'
     r.scan_info.warnings = 2
-    r.warnings = [{ name: :failure }, { error: :occured }]
+    r.warnings = [
+      Xenuti::Warning.new(name: :failure),
+      Xenuti::Warning.new(error: :occured)
+    ]
     r
   end
 

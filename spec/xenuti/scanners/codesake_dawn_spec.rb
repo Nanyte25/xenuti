@@ -14,8 +14,66 @@ describe Xenuti::CodesakeDawn do
   let(:codesake_dawn) { Xenuti::CodesakeDawn.new(config) }
   let(:alpha_codesake_dawn) { Xenuti::CodesakeDawn.new(alpha_config) }
   let(:codesake_dawn_output) { File.new(CODESAKE_DAWN_OUTPUT).read }
+  let(:warning_hash) do
+    {
+      'name'          => 'CVE-0123-4567',
+      'severity'      => 'high',
+      'priority'      => 'Unknown',
+      'message'       => 'Application contains SQL injection.',
+      'remediation'   => 'Don`t write code.'
+    }
+  end
+  let(:warning) { Xenuti::CodesakeDawn::Warning.new(warning_hash) }
 
   it_behaves_like 'static_analyzer', Xenuti::CodesakeDawn
+
+  describe 'Warning' do
+    describe '#initialize' do
+      it 'should accept hash with correct fields' do
+        expect(warning.check).to be_true
+      end
+    end
+
+    describe '#check' do
+      it 'should require name to be String' do
+        warning.name = :CVE
+        expect { warning.check }.to raise_error RuntimeError
+      end
+
+      it 'should require priority to be String' do
+        warning.priority = 1
+        expect { warning.check }.to raise_error RuntimeError
+      end
+
+      it 'should require message to be String' do
+        warning.message = Time.now
+        expect { warning.check }.to raise_error RuntimeError
+      end
+
+      it 'should require remediation to be String' do
+        warning.remediation = 1
+        expect { warning.check }.to raise_error RuntimeError
+      end
+
+      it 'should verify severity is: critical high medium low info none' do
+        warning.severity = 'critical'
+        expect(warning.check).to be_true
+        warning.severity = 'high'
+        expect(warning.check).to be_true
+        warning.severity = 'medium'
+        expect(warning.check).to be_true
+        warning.severity = 'low'
+        expect(warning.check).to be_true
+        warning.severity = 'info'
+        expect(warning.check).to be_true
+        warning.severity = 'none'
+        expect(warning.check).to be_true
+
+        warning.severity = 'higher'
+        expect { warning.check }.to raise_error RuntimeError
+      end
+    end
+  end
 
   describe '#initialize' do
     it 'should load config file' do

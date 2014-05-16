@@ -9,6 +9,20 @@ require 'json'
 class Xenuti::CodesakeDawn
   include Xenuti::StaticAnalyzer
 
+  class Warning < Xenuti::Warning
+    def initialize(hash)
+      super
+
+      constraints do
+        fail unless name.is_a? String
+        fail unless %w(critical high medium low info none).include? severity
+        fail unless priority.is_a? String
+        fail unless message.is_a? String
+        fail unless remediation.is_a? String
+      end
+    end
+  end
+
   # Check requirements for running this scanner - throws RuntimeError if any of
   # the requirements are not met. Returns true when requirements are met.
   def self.check_requirements(_config)

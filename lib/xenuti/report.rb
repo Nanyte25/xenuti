@@ -29,7 +29,7 @@ class Xenuti::Report < Hash
       fail unless scan_info.scanner_name.is_a? String
       fail unless scan_info.scanner_version.is_a? String
       self[:warnings].each do |warning|
-        fail unless warning.is_a? Hash
+        fail unless warning.is_a? Xenuti::Warning
       end
     end
   end

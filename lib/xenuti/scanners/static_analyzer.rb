@@ -4,8 +4,6 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
-require 'xenuti/report'
-
 module Xenuti::StaticAnalyzer
   attr_accessor :config
 
@@ -33,7 +31,7 @@ module Xenuti::StaticAnalyzer
       # Fill in the metadata
       @report.scan_info.start_time = @start_time
       @report.scan_info.end_time = @end_time
-      @report.scan_info.duration = @end_time - @start_time
+      @report.scan_info.duration = (@end_time - @start_time).round(2)
       @report.scan_info.scanner_name = name
       @report.scan_info.scanner_version = version
     end

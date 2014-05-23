@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 gem 'safe_yaml'
 gem 'commander'
 gem 'json'
+gem 'mail'
 
 group :development, :test do
   gem 'rubocop'

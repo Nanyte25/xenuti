@@ -42,4 +42,12 @@ class Hash
     end
     self
   end
+
+  def key_maxlen
+    maxlen = 0
+    each_key do |key|
+      maxlen = key.size if key.size > maxlen
+    end
+    maxlen
+  end
 end

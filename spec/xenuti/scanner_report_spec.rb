@@ -6,10 +6,10 @@
 
 require 'spec_helper'
 
-describe Xenuti::Report do
+describe Xenuti::ScannerReport do
   let(:report) do
     # Some data to fill in the report
-    r = Xenuti::Report.new
+    r = Xenuti::ScannerReport.new
     r.scan_info.start_time = Time.now
     r.scan_info.end_time = Time.now
     r.scan_info.duration = 1.1

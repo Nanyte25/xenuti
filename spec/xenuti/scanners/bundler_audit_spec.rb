@@ -123,9 +123,9 @@ describe Xenuti::BundlerAudit do
   end
 
   describe '#parse_results' do
-    it 'should parse bunler audit output into Xenuti::Report correctly' do
+    it 'should parse bunler audit output into :ReScannerReportport correctly' do
       report = bundler_audit.parse_results(bundler_audit_output)
-      expect(report).to be_a(Xenuti::Report)
+      expect(report).to be_a(Xenuti::ScannerReport)
       expect(report.warnings[1]).to be_a(Xenuti::BundlerAudit::Warning)
       expect(report.warnings[1].advisory).to be_eql('OSVDB-100527')
     end

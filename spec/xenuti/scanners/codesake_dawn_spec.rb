@@ -55,7 +55,7 @@ describe Xenuti::CodesakeDawn do
         expect { warning.check }.to raise_error RuntimeError
       end
 
-      it 'should verify severity is: critical high medium low info none' do
+      it 'should verify severity is: critical high medium low info unknown' do
         warning.severity = 'critical'
         expect(warning.check).to be_true
         warning.severity = 'high'
@@ -66,7 +66,7 @@ describe Xenuti::CodesakeDawn do
         expect(warning.check).to be_true
         warning.severity = 'info'
         expect(warning.check).to be_true
-        warning.severity = 'none'
+        warning.severity = 'unknown'
         expect(warning.check).to be_true
 
         warning.severity = 'higher'
@@ -120,9 +120,9 @@ describe Xenuti::CodesakeDawn do
   end
 
   describe '#parse_results' do
-    it 'should parse codesake_dawn output into Xenuti::Report correctly' do
+    it 'should parse codesake_dawn output into ScannerReport correctly' do
       report = codesake_dawn.parse_results(codesake_dawn_output)
-      expect(report).to be_a(Xenuti::Report)
+      expect(report).to be_a(Xenuti::ScannerReport)
       expect(report.warnings[0]).to be_a(Xenuti::CodesakeDawn::Warning)
       expect(report.warnings[0]['name']).to be_eql('CVE-2012-6496')
     end

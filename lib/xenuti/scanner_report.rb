@@ -5,10 +5,11 @@
 # MIT license.
 
 require 'ruby_util/hash'
+require 'ruby_util/string'
 require 'ruby_util/hash_with_method_access'
 require 'ruby_util/hash_with_constraints'
 
-class Xenuti::Report < Hash
+class Xenuti::ScannerReport < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
@@ -30,8 +31,23 @@ class Xenuti::Report < Hash
       fail unless scan_info.scanner_version.is_a? String
       self[:warnings].each do |warning|
         fail unless warning.is_a? Xenuti::Warning
+        warning.check
       end
     end
+  end
+
+  def formatted
+    report = <<-EOF.unindent
+    ============================
+    scanner:  #{scan_info.scanner_name}
+    version:  #{scan_info.scanner_version}
+    duration: #{scan_info.duration} s
+    ============================
+    EOF
+    warnings.each do |warning|
+      report << warning.formatted + "\n"
+    end
+    report
   end
   # rubocop:enable MethodLength
   # rubocop:enable CyclomaticComplexity

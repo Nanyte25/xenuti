@@ -43,7 +43,6 @@ class Xenuti::BundlerAudit
   end
 
   def version
-    # TODO: fix this to not call subshell
     @version ||= %x(bundle-audit version).match(/\d\.\d\.\d/).to_s
   end
 
@@ -60,7 +59,7 @@ class Xenuti::BundlerAudit
 
   # rubocop:disable MethodLength
   def parse_results(res)
-    report = Xenuti::Report.new
+    report = Xenuti::ScannerReport.new
     res.scan(/Name:.*?Solution:.*?\n/m).each do |w|
       warn_hash = {}
       warn_hash[:name] = w.match(/(?<=Name: ).*?\n/)[0].strip
@@ -81,7 +80,7 @@ class Xenuti::BundlerAudit
   end
 
   def update_database
-    # TODO: updates BundlerAudit`s database
-    fail NotImplementedError
+    %x(bundle-audit update)
+    fail 'Failed to update BundlerAudit database' if $?.exitstatus != 0
   end
 end

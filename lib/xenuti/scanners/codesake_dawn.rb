@@ -15,7 +15,7 @@ class Xenuti::CodesakeDawn
 
       constraints do
         fail unless name.is_a? String
-        fail unless %w(critical high medium low info none).include? severity
+        fail unless %w(critical high medium low info unknown).include? severity
         fail unless priority.is_a? String
         fail unless message.is_a? String
         fail unless remediation.is_a? String
@@ -54,7 +54,7 @@ class Xenuti::CodesakeDawn
   end
 
   def parse_results(json_output)
-    report = Xenuti::Report.new
+    report = Xenuti::ScannerReport.new
     JSON.load(json_output.lines.to_a[1])['vulnerabilities'].each do |warning|
       report.warnings << Warning.new(warning)
     end

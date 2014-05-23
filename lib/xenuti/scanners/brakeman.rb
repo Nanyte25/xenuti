@@ -51,7 +51,7 @@ class Xenuti::Brakeman
   end
 
   def parse_results(json_output)
-    report = Xenuti::Report.new
+    report = Xenuti::ScannerReport.new
     JSON.load(json_output)['warnings'].each do |warning|
       report.warnings << Warning.new(warning)
     end

@@ -108,9 +108,9 @@ describe Xenuti::Brakeman do
   end
 
   describe '#parse_results' do
-    it 'should parse brakeman output into Xenuti::Report correctly' do
+    it 'should parse brakeman output into ScannerReport correctly' do
       report = brakeman.parse_results(brakeman_output)
-      expect(report).to be_a(Xenuti::Report)
+      expect(report).to be_a(Xenuti::ScannerReport)
       expect(report.warnings[1]).to be_a(Xenuti::Brakeman::Warning)
       expect(report.warnings[1][:warning_code]).to be_eql(73)
     end

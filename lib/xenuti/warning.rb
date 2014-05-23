@@ -1,4 +1,4 @@
-# Copyright (C) 2014 Jan Rusnacko
+  # Copyright (C) 2014 Jan Rusnacko
 #
 # This copyrighted material is made available to anyone wishing to use,
 # modify, copy, or redistribute it subject to the terms and conditions of the
@@ -14,5 +14,15 @@ class Xenuti::Warning < Hash
 
   def initialize(hash)
     self.merge! hash.deep_symbolize_keys
+    constraints do
+    end
+  end
+
+  def formatted
+    output = ''
+    each do |key, value|
+      output << format("%-#{key_maxlen}s: %s\n", key, value) unless value.nil?
+    end
+    output
   end
 end

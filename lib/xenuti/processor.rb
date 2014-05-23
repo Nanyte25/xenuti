@@ -5,7 +5,6 @@
 # MIT license.
 
 require 'xenuti/repository'
-require 'pp'
 
 class Xenuti::Processor
   attr_accessor :config
@@ -34,12 +33,15 @@ class Xenuti::Processor
   end
 
   def run_static_analysis
+    report = ''
     STATIC_ANALYZERS.each do |klass|
       analyzer = klass.new(config)
       if analyzer.enabled?
         analyzer.run_scan
-        pp analyzer.report
+        report << analyzer.report.formatted << "\n"
       end
     end
+    puts report unless config.general.quiet
+    Xenuti::ReportSender.new(config).send(report) if config.smtp.enabled
   end
 end

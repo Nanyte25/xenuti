@@ -17,6 +17,14 @@ module HashWithMethodAccess
     super(key, val)
   end
 
+  def merge(other)
+    super(other.deep_symbolize_keys)
+  end
+
+  def merge!(other)
+    super(other.deep_symbolize_keys)
+  end
+
   # rubocop:disable NonNilCheck
   def method_missing(name, *args, &block)
     if name =~ /=\Z/

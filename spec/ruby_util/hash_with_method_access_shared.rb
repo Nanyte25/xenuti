@@ -4,8 +4,13 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
-shared_examples 'hash with method access' do |klass|
-  let(:hashw) { klass.new(:a => 1, 'b' => { c: 2 }, 'd' => 3) }
+shared_examples 'hash with method access' do |hash|
+  let(:hashw) do
+    hash[:a] = 1
+    hash['b'] = { c: 2 }
+    hash['d'] = 3
+    hash
+  end
 
   it 'should allow read access through symbols' do
     expect(hashw[:a]).to be_eql(1)
@@ -64,5 +69,17 @@ shared_examples 'hash with method access' do |klass|
 
   it 'should throw NoMethodError when unspecified root is called' do
     expect { hashw.unknown.conf.root }.to raise_error NoMethodError
+  end
+
+  it 'merge! with ordinary hash and keep method access' do
+    hashw.merge!('e' => 4, :f => 5)
+    expect(hashw.e).to be_eql(4)
+    expect(hashw.f).to be_eql(5)
+  end
+
+  it 'merge with ordinary hash and keep method access' do
+    hash = hashw.merge('e' => 4, :f => 5)
+    expect(hash.e).to be_eql(4)
+    expect(hash.f).to be_eql(5)
   end
 end

@@ -28,14 +28,13 @@ describe Hash do
 
   describe '#key_maxlen' do
     it 'should return maximum length of longest key' do
-      warn = Xenuti::Warning.new(size: 1, longest: 2, short: 3)
-      puts warn.key_maxlen
-      expect(warn.key_maxlen).to be_eql(7)
+      hash = { size: 1, longest: 2, short: 3 }
+      expect(hash.key_maxlen).to be_eql(7)
     end
 
     it 'should return 0 for empty hash' do
-      warn = Xenuti::Warning.new({})
-      expect(warn.key_maxlen).to be_eql(0)
+      hash = {}
+      expect(hash.key_maxlen).to be_eql(0)
     end
   end
 end

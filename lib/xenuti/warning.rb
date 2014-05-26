@@ -11,11 +11,16 @@ require 'ruby_util/hash_with_constraints'
 class Xenuti::Warning < Hash
   include HashWithMethodAccess
   include HashWithConstraints
+  include Comparable
 
   def initialize(hash)
     self.merge! hash.deep_symbolize_keys
     constraints do
     end
+  end
+
+  def <=>(_other)
+    fail NoMethodError 'Every Warning must implement its own <=> method'
   end
 
   def formatted

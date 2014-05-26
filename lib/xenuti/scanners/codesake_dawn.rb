@@ -10,16 +10,22 @@ class Xenuti::CodesakeDawn
   include Xenuti::StaticAnalyzer
 
   class Warning < Xenuti::Warning
+    SEVERITY = %w(critical high medium low info unknown)
+
     def initialize(hash)
       super
 
       constraints do
         fail unless name.is_a? String
-        fail unless %w(critical high medium low info unknown).include? severity
+        fail unless SEVERITY.include? severity
         fail unless priority.is_a? String
         fail unless message.is_a? String
         fail unless remediation.is_a? String
       end
+    end
+
+    def <=>(other)
+      SEVERITY.index(severity) <=> SEVERITY.index(other.severity)
     end
   end
 

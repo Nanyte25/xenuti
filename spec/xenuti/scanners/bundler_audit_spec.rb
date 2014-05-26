@@ -35,6 +35,37 @@ describe Xenuti::BundlerAudit do
       end
     end
 
+    # rubocop:disable UselessComparison
+    describe '<=>' do
+      it 'should compare warnings by criticality' do
+        high = warning.clone
+        medium = warning.clone
+        low = warning.clone
+        unknown = warning.clone
+
+        high['criticality'] = 'High'
+        medium['criticality'] = 'Medium'
+        low['criticality'] = 'Low'
+        unknown['criticality'] = 'Unknown'
+
+        expect(high <=> low).to be_eql(-1)
+        expect(high <=> medium).to be_eql(-1)
+        expect(medium <=> low).to be_eql(-1)
+        expect(low <=> unknown).to be_eql(-1)
+
+        expect(unknown <=> low).to be_eql(1)
+        expect(low <=> medium).to be_eql(1)
+        expect(medium <=> high).to be_eql(1)
+        expect(unknown <=> high).to be_eql(1)
+
+        expect(unknown <=> unknown).to be_eql(0)
+        expect(low <=> low).to be_eql(0)
+        expect(medium <=> medium).to be_eql(0)
+        expect(high <=> high).to be_eql(0)
+      end
+    end
+    # rubocop:enable UselessComparison
+
     describe '#check' do
       it 'should require name to be a String' do
         warning.name = :SQL

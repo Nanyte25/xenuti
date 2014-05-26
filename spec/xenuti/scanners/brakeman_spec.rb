@@ -34,6 +34,32 @@ describe Xenuti::Brakeman do
       end
     end
 
+    # rubocop:disable UselessComparison
+    describe '<=>' do
+      it 'should compare warnings by confidence' do
+        high = warning.clone
+        medium = warning.clone
+        low = warning.clone
+
+        high['confidence'] = 'High'
+        low['confidence'] = 'Low'
+        medium['confidence'] = 'Medium'
+
+        expect(high <=> low).to be_eql(-1)
+        expect(high <=> medium).to be_eql(-1)
+        expect(medium <=> low).to be_eql(-1)
+
+        expect(low <=> medium).to be_eql(1)
+        expect(medium <=> high).to be_eql(1)
+        expect(low <=> high).to be_eql(1)
+
+        expect(low <=> low).to be_eql(0)
+        expect(medium <=> medium).to be_eql(0)
+        expect(high <=> high).to be_eql(0)
+      end
+    end
+    # rubocop:enable UselessComparison
+
     describe '#check' do
       it 'should require warning_type to be String' do
         warning.warning_type = :SQL

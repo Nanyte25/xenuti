@@ -8,12 +8,21 @@ require 'spec_helper'
 require 'ruby_util/hash_with_method_access_shared'
 
 describe 'warning' do
+  let(:warn) { Xenuti::Warning.new(a: :b) }
+
   it_behaves_like 'hash with method access', Xenuti::Warning
 
   describe '#initialize' do
     it 'should accept Hash as argument' do
-      warn = Xenuti::Warning.new(a: :b)
       expect(warn.a).to be_eql(:b)
     end
   end
+
+  # rubocop:disable UselessComparison
+  describe '<=>' do
+    it 'should throw error when not defined' do
+      expect { warn <=> warn }.to raise_error NoMethodError
+    end
+  end
+  # rubocop:enable UselessComparison
 end

@@ -10,6 +10,8 @@ class Xenuti::BundlerAudit
   include Xenuti::StaticAnalyzer
 
   class Warning < Xenuti::Warning
+    CRITICALITY = %w(High Medium Low Unknown)
+
     # TODO: refactor
     # rubocop:disable CyclomaticComplexity
     def initialize(hash)
@@ -22,10 +24,14 @@ class Xenuti::BundlerAudit
         fail unless url.is_a? String
         fail unless title.is_a? String
         fail unless solution.is_a? String
-        fail unless %w(High Medium Low Unknown).include? criticality
+        fail unless CRITICALITY.include? criticality
       end
     end
     # rubocop:enable CyclomaticComplexity
+
+    def <=>(other)
+      CRITICALITY.index(criticality) <=> CRITICALITY.index(other.criticality)
+    end
   end
 
   def self.check_requirements(_config)

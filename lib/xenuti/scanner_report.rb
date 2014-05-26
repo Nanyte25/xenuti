@@ -44,7 +44,7 @@ class Xenuti::ScannerReport < Hash
     duration: #{scan_info.duration} s
     ============================
     EOF
-    warnings.each do |warning|
+    warnings.sort.each do |warning|
       report << warning.formatted + "\n"
     end
     report

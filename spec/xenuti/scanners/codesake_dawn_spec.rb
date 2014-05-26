@@ -34,6 +34,45 @@ describe Xenuti::CodesakeDawn do
       end
     end
 
+    # rubocop:disable UselessComparison
+    describe '<=>' do
+      it 'should compare warnings by severity' do
+        critical = warning.clone
+        high = warning.clone
+        medium = warning.clone
+        low = warning.clone
+        info = warning.clone
+        unknown = warning.clone
+
+        critical['severity'] = 'critical'
+        high['severity'] = 'high'
+        medium['severity'] = 'medium'
+        low['severity'] = 'low'
+        info['severity'] = 'info'
+        unknown['severity'] = 'unknown'
+
+        expect(critical <=> high).to be_eql(-1)
+        expect(high <=> medium).to be_eql(-1)
+        expect(medium <=> low).to be_eql(-1)
+        expect(low <=> info).to be_eql(-1)
+        expect(info <=> unknown).to be_eql(-1)
+
+        expect(unknown <=> info).to be_eql(1)
+        expect(info <=> low).to be_eql(1)
+        expect(low <=> medium).to be_eql(1)
+        expect(medium <=> high).to be_eql(1)
+        expect(high <=> critical).to be_eql(1)
+
+        expect(critical <=> critical).to be_eql(0)
+        expect(high <=> high).to be_eql(0)
+        expect(medium <=> medium).to be_eql(0)
+        expect(low <=> low).to be_eql(0)
+        expect(info <=> info).to be_eql(0)
+        expect(unknown <=> unknown).to be_eql(0)
+      end
+    end
+    # rubocop:enable UselessComparison
+
     describe '#check' do
       it 'should require name to be String' do
         warning.name = :CVE

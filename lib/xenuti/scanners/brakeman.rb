@@ -10,6 +10,8 @@ class Xenuti::Brakeman
   include Xenuti::StaticAnalyzer
 
   class Warning < Xenuti::Warning
+    CONFIDENCE = %w(High Medium Low)
+
     def initialize(hash)
       super
 
@@ -18,8 +20,12 @@ class Xenuti::Brakeman
         fail unless warning_code.is_a? Integer
         fail unless file.is_a? String
         fail unless message.is_a? String
-        fail unless %w(High Medium Low).include? confidence
+        fail unless CONFIDENCE.include? confidence
       end
+    end
+
+    def <=>(other)
+      CONFIDENCE.index(confidence) <=> CONFIDENCE.index(other.confidence)
     end
   end
 

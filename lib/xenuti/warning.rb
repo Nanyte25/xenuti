@@ -13,8 +13,13 @@ class Xenuti::Warning < Hash
   include HashWithConstraints
   include Comparable
 
-  def initialize(hash)
-    self.merge! hash.deep_symbolize_keys
+  def self.from_hash(hash)
+    new.merge! hash
+  end
+
+  def initialize
+    super
+
     constraints do
     end
   end

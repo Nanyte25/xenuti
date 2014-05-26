@@ -12,10 +12,10 @@ class Xenuti::Brakeman
   class Warning < Xenuti::Warning
     CONFIDENCE = %w(High Medium Low)
 
-    def initialize(hash)
+    def check
       super
 
-      constraints do
+      verify do
         fail unless warning_type.is_a? String
         fail unless warning_code.is_a? Integer
         fail unless file.is_a? String
@@ -58,8 +58,8 @@ class Xenuti::Brakeman
 
   def parse_results(json_output)
     report = Xenuti::ScannerReport.new
-    JSON.load(json_output)['warnings'].each do |warning|
-      report.warnings << Warning.new(warning)
+    JSON.load(json_output)['warnings'].each do |warn_hash|
+      report.warnings << Warning.from_hash(warn_hash)
     end
     report
   end

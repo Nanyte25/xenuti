@@ -24,12 +24,12 @@ describe Xenuti::BundlerAudit do
       solution:     'upgrade to >= 3.2.15'
     }
   end
-  let(:warning) { Xenuti::BundlerAudit::Warning.new(warning_hash) }
+  let(:warning) { Xenuti::BundlerAudit::Warning.from_hash(warning_hash) }
 
   it_behaves_like 'static_analyzer', Xenuti::BundlerAudit
 
   describe 'Warning' do
-    describe '#initialize' do
+    describe '::from_hash' do
       it 'should accept hash with correct fields' do
         expect(warning.check).to be_true
       end

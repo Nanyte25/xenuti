@@ -13,11 +13,11 @@ class Xenuti::Config < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
-  def initialize(hash)
-    self.merge! hash.deep_symbolize_keys
+  def self.from_hash(hash)
+    new.merge! hash.deep_symbolize_keys
   end
 
   def self.from_yaml(yaml_string)
-    new(YAML.load(yaml_string, safe: true))
+    from_hash(YAML.load(yaml_string, safe: true))
   end
 end

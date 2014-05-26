@@ -14,10 +14,10 @@ class Xenuti::BundlerAudit
 
     # TODO: refactor
     # rubocop:disable CyclomaticComplexity
-    def initialize(hash)
+    def check
       super
 
-      constraints do
+      verify do
         fail unless name.is_a? String
         fail unless version.is_a? String
         fail unless advisory.is_a? String
@@ -75,7 +75,7 @@ class Xenuti::BundlerAudit
       warn_hash[:url] = w.match(/(?<=URL: ).*?\n/)[0].strip
       warn_hash[:title] = w.match(/(?<=Title: ).*?\n/)[0].strip
       warn_hash[:solution] = w.match(/(?<=Solution: ).*?\n/)[0].strip
-      report.warnings << Warning.new(warn_hash)
+      report.warnings << Warning.from_hash(warn_hash)
     end
     report
   end

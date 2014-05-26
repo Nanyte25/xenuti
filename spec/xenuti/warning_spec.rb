@@ -7,12 +7,12 @@
 require 'spec_helper'
 require 'ruby_util/hash_with_method_access_shared'
 
-describe 'warning' do
-  let(:warn) { Xenuti::Warning.new(a: :b) }
+describe Xenuti::Warning do
+  let(:warn) { Xenuti::Warning.from_hash(a: :b) }
 
-  it_behaves_like 'hash with method access', Xenuti::Warning
+  it_behaves_like 'hash with method access', Xenuti::Warning.new
 
-  describe '#initialize' do
+  describe '::from_hash' do
     it 'should accept Hash as argument' do
       expect(warn.a).to be_eql(:b)
     end

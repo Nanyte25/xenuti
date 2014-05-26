@@ -17,13 +17,13 @@ describe Xenuti::ScannerReport do
     r.scan_info.scanner_version = '1.2.3'
     r.scan_info.warnings = 2
     r.warnings = [
-      Xenuti::Warning.new(name: :failure),
-      Xenuti::Warning.new(error: :occured)
+      Xenuti::Warning.new.merge!(name: :failure),
+      Xenuti::Warning.new.merge!(error: :occured)
     ]
     r
   end
 
-  it_behaves_like 'hash with method access', Xenuti::Config
+  it_behaves_like 'hash with method access', Xenuti::ScannerReport.new
 
   describe 'check' do
     it 'should return true for valid report' do

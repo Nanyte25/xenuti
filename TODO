@@ -3,5 +3,4 @@ TODO:
 * Allow GPG-encryption of the results.
 * Fix the command-line: add generate config option
 * Allow generating only diff of results from latest scan
-* Add sorting of results in Report. Each scanners warnings should define their own criteria for sorting.
 * Accept multiple email addresses to send results to (keep compat with GPG enc)

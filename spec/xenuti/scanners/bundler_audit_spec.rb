@@ -31,7 +31,7 @@ describe Xenuti::BundlerAudit do
   describe 'Warning' do
     describe '::from_hash' do
       it 'should accept hash with correct fields' do
-        expect(warning.check).to be_true
+        expect(warning).to be_a(Xenuti::BundlerAudit::Warning)
       end
     end
 
@@ -65,52 +65,6 @@ describe Xenuti::BundlerAudit do
       end
     end
     # rubocop:enable UselessComparison
-
-    describe '#check' do
-      it 'should require name to be a String' do
-        warning.name = :SQL
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require version to be a String' do
-        warning.version = 1
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require advisory to be a String' do
-        warning.advisory = Time.now
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require url to be a String' do
-        warning.url = 1
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require title to be a String' do
-        warning.title = 1
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require solution to be a String' do
-        warning.solution = 1
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should verify criticality is one of High, Medium, Low, Unknown' do
-        warning.criticality = 'High'
-        expect(warning.check).to be_true
-        warning.criticality = 'Medium'
-        expect(warning.check).to be_true
-        warning.criticality = 'Low'
-        expect(warning.check).to be_true
-        warning.criticality = 'Unknown'
-        expect(warning.check).to be_true
-
-        warning.criticality = 'Higher'
-        expect { warning.check }.to raise_error RuntimeError
-      end
-    end
   end
 
   describe '#initialize' do

@@ -30,7 +30,7 @@ describe Xenuti::CodesakeDawn do
   describe 'Warning' do
     describe '::from_hash' do
       it 'should accept hash with correct fields' do
-        expect(warning.check).to be_true
+        expect(warning).to be_a(Xenuti::CodesakeDawn::Warning)
       end
     end
 
@@ -72,46 +72,6 @@ describe Xenuti::CodesakeDawn do
       end
     end
     # rubocop:enable UselessComparison
-
-    describe '#check' do
-      it 'should require name to be String' do
-        warning.name = :CVE
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require priority to be String' do
-        warning.priority = 1
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require message to be String' do
-        warning.message = Time.now
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require remediation to be String' do
-        warning.remediation = 1
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should verify severity is: critical high medium low info unknown' do
-        warning.severity = 'critical'
-        expect(warning.check).to be_true
-        warning.severity = 'high'
-        expect(warning.check).to be_true
-        warning.severity = 'medium'
-        expect(warning.check).to be_true
-        warning.severity = 'low'
-        expect(warning.check).to be_true
-        warning.severity = 'info'
-        expect(warning.check).to be_true
-        warning.severity = 'unknown'
-        expect(warning.check).to be_true
-
-        warning.severity = 'higher'
-        expect { warning.check }.to raise_error RuntimeError
-      end
-    end
   end
 
   describe '#initialize' do

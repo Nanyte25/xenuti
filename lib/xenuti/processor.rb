@@ -17,9 +17,15 @@ class Xenuti::Processor
   end
 
   def run
+    report = Xenuti::Report.new
+    report.scan_info.start_time = Time.now
+
     check_requirements
     checkout_code
-    run_static_analysis
+    run_static_analysis(report)
+
+    report.scan_info.end_time = Time.now
+    output_results(report)
   end
 
   def check_requirements
@@ -32,16 +38,19 @@ class Xenuti::Processor
     Xenuti::Repository.fetch_source(config, config.general.tmpdir + '/source')
   end
 
-  def run_static_analysis
-    report = ''
+  def run_static_analysis(report)
     STATIC_ANALYZERS.each do |klass|
       analyzer = klass.new(config)
       if analyzer.enabled?
         analyzer.run_scan
-        report << analyzer.report.formatted << "\n"
+        report.scanner_reports << analyzer.report
       end
     end
-    puts report unless config.general.quiet
-    Xenuti::ReportSender.new(config).send(report) if config.smtp.enabled
+  end
+
+  def output_results(report)
+    formatted = report.formatted(config)
+    puts formatted unless config.general.quiet
+    Xenuti::ReportSender.new(config).send(formatted) if config.smtp.enabled
   end
 end

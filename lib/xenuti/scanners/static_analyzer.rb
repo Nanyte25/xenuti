@@ -36,9 +36,6 @@ module Xenuti::StaticAnalyzer
       @report.scan_info.scanner_version = version
     end
 
-    # Make sure the report is sane
-    @report.check
-
     @report
   end
 end

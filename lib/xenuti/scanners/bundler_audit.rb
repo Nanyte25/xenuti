@@ -12,23 +12,6 @@ class Xenuti::BundlerAudit
   class Warning < Xenuti::Warning
     CRITICALITY = %w(High Medium Low Unknown)
 
-    # TODO: refactor
-    # rubocop:disable CyclomaticComplexity
-    def check
-      super
-
-      verify do
-        fail unless name.is_a? String
-        fail unless version.is_a? String
-        fail unless advisory.is_a? String
-        fail unless url.is_a? String
-        fail unless title.is_a? String
-        fail unless solution.is_a? String
-        fail unless CRITICALITY.include? criticality
-      end
-    end
-    # rubocop:enable CyclomaticComplexity
-
     def <=>(other)
       CRITICALITY.index(criticality) <=> CRITICALITY.index(other.criticality)
     end

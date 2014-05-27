@@ -30,7 +30,7 @@ describe Xenuti::Brakeman do
   describe 'Warning' do
     describe '::from_hash' do
       it 'should accept hash with correct fields' do
-        expect(warning.check).to be_true
+        expect(warning).to be_a(Xenuti::Brakeman::Warning)
       end
     end
 
@@ -59,40 +59,6 @@ describe Xenuti::Brakeman do
       end
     end
     # rubocop:enable UselessComparison
-
-    describe '#check' do
-      it 'should require warning_type to be String' do
-        warning.warning_type = :SQL
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require warning_code to be Integer' do
-        warning.warning_code = '1'
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require message to be String' do
-        warning.message = Time.now
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should require file to be String' do
-        warning.file = 1
-        expect { warning.check }.to raise_error RuntimeError
-      end
-
-      it 'should verify confidence is one of High, Medium, Low' do
-        warning.confidence = 'High'
-        expect(warning.check).to be_true
-        warning.confidence = 'Medium'
-        expect(warning.check).to be_true
-        warning.confidence = 'Low'
-        expect(warning.check).to be_true
-
-        warning.confidence = 'Higher'
-        expect { warning.check }.to raise_error RuntimeError
-      end
-    end
   end
 
   describe '#initialize' do

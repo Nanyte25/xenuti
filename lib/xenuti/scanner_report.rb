@@ -13,29 +13,17 @@ class Xenuti::ScannerReport < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
-  # TODO: refactor
-  # rubocop:disable MethodLength
-  # rubocop:disable CyclomaticComplexity
   def initialize
     self[:scan_info] = {
       start_time: nil, end_time: nil, duration: nil,
       scanner_name: nil, scanner_version: nil }
 
     self[:warnings] = []
-
-    constraints do
-      fail unless scan_info.start_time.is_a? Time
-      fail unless scan_info.end_time.is_a? Time
-      fail unless scan_info.duration.is_a? Float
-      fail unless scan_info.scanner_name.is_a? String
-      fail unless scan_info.scanner_version.is_a? String
-      self[:warnings].each do |warning|
-        fail unless warning.is_a? Xenuti::Warning
-        warning.check
-      end
-    end
   end
 
+  # TODO: refactor
+  # rubocop:disable MethodLength
+  # rubocop:disable CyclomaticComplexity
   def formatted
     report = <<-EOF.unindent
     ============================

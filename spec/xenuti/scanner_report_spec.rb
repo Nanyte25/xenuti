@@ -24,40 +24,4 @@ describe Xenuti::ScannerReport do
   end
 
   it_behaves_like 'hash with method access', Xenuti::ScannerReport.new
-
-  describe 'check' do
-    it 'should return true for valid report' do
-      expect(report.check).to be_true
-    end
-
-    it 'should verify start time contains a Time' do
-      report.scan_info.start_time = 12
-      expect { report.check }.to raise_error RuntimeError
-    end
-
-    it 'should verify end time contains a Time' do
-      report.scan_info.end_time = 12
-      expect { report.check }.to raise_error RuntimeError
-    end
-
-    it 'should verify duration is an Float' do
-      report.scan_info.duration = :a
-      expect { report.check }.to raise_error RuntimeError
-    end
-
-    it 'should verify scanner_name is a String' do
-      report.scan_info.scanner_name = :a
-      expect { report.check }.to raise_error RuntimeError
-    end
-
-    it 'should verify scanner_version is a String' do
-      report.scan_info.scanner_version = :a
-      expect { report.check }.to raise_error RuntimeError
-    end
-
-    it 'should verify that all warnings are Hash' do
-      report.warnings[1] = 'serious issue'
-      expect { report.check }.to raise_error RuntimeError
-    end
-  end
 end

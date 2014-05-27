@@ -10,18 +10,10 @@ require 'ruby_util/hash_with_constraints'
 
 class Xenuti::Warning < Hash
   include HashWithMethodAccess
-  include HashWithConstraints
   include Comparable
 
   def self.from_hash(hash)
     new.merge! hash
-  end
-
-  def initialize
-    super
-
-    constraints do
-    end
   end
 
   def <=>(_other)

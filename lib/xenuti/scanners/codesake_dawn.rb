@@ -12,18 +12,6 @@ class Xenuti::CodesakeDawn
   class Warning < Xenuti::Warning
     SEVERITY = %w(critical high medium low info unknown)
 
-    def check
-      super
-
-      verify do
-        fail unless name.is_a? String
-        fail unless SEVERITY.include? severity
-        fail unless priority.is_a? String
-        fail unless message.is_a? String
-        fail unless remediation.is_a? String
-      end
-    end
-
     def <=>(other)
       SEVERITY.index(severity) <=> SEVERITY.index(other.severity)
     end

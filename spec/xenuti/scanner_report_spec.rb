@@ -7,21 +7,25 @@
 require 'spec_helper'
 
 describe Xenuti::ScannerReport do
-  let(:report) do
-    # Some data to fill in the report
-    r = Xenuti::ScannerReport.new
-    r.scan_info.start_time = Time.now
-    r.scan_info.end_time = Time.now
-    r.scan_info.duration = 1.1
-    r.scan_info.scanner_name = 'foo'
-    r.scan_info.scanner_version = '1.2.3'
-    r.scan_info.warnings = 2
-    r.warnings = [
-      Xenuti::Warning.new.merge!(name: :failure),
-      Xenuti::Warning.new.merge!(error: :occured)
-    ]
-    r
-  end
-
   it_behaves_like 'hash with method access', Xenuti::ScannerReport.new
+
+  describe '#diff!' do
+    it 'should diff! correctly' do
+      new_report = Xenuti::ScannerReport.new
+      old_report = Xenuti::ScannerReport.new
+
+      both_warn = Xenuti::Warning.from_hash(name: 'CVE-1234-567', msg: 'both')
+      new_warn = Xenuti::Warning.from_hash(msg: 'New warning')
+      old_warn = Xenuti::Warning.from_hash(msg: 'Fixed warning')
+      new_report.warnings << both_warn
+      old_report.warnings << both_warn
+      new_report.warnings << new_warn
+      old_report.warnings << old_warn
+
+      new_report.diff!(old_report)
+      expect(new_report.new_warnings).to be_eql([new_warn])
+      expect(new_report.fixed_warnings).to be_eql([old_warn])
+      expect(new_report.warnings).to be_eql([both_warn, new_warn])
+    end
+  end
 end

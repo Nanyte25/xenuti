@@ -18,6 +18,7 @@ class Xenuti::Processor
 
   def run
     report = Xenuti::Report.new
+    report.config = config
     report.scan_info.start_time = Time.now
 
     check_requirements
@@ -26,6 +27,7 @@ class Xenuti::Processor
 
     report.scan_info.end_time = Time.now
     output_results(report)
+    report.save
   end
 
   def check_requirements
@@ -49,6 +51,7 @@ class Xenuti::Processor
   end
 
   def output_results(report)
+    report.diff!(Xenuti::Report.latest_report(config)) if config.general.diff
     formatted = report.formatted(config)
     puts formatted unless config.general.quiet
     Xenuti::ReportSender.new(config).send(formatted) if config.smtp.enabled

@@ -15,6 +15,7 @@ class Xenuti::Repository
         clone(config.general.repo, destination)
       end
       config.general.source = destination
+      config.general.revision = revision(destination)
     end
 
     def clone(source, destination)
@@ -41,6 +42,16 @@ class Xenuti::Repository
         %x(git status 2>&1)
         return true if $?.exitstatus == 0
         return false
+      ensure
+        Dir.chdir cwd
+      end
+    end
+
+    def revision(dir)
+      cwd = Dir.pwd
+      begin
+        Dir.chdir dir
+        return %x(git rev-parse --verify HEAD).strip
       ensure
         Dir.chdir cwd
       end

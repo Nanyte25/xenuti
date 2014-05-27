@@ -32,11 +32,27 @@ class Xenuti::ScannerReport < Hash
     duration: #{scan_info.duration} s
     ============================
     EOF
-    warnings.sort.each do |warning|
-      report << warning.formatted + "\n"
+    warn_to_print = diffed? ? new_warnings : warnings
+    if warn_to_print.size == 0
+      report << "No new warnings.\n"
+    else
+      warn_to_print.sort.each do |warning|
+        report << warning.formatted + "\n"
+      end
     end
     report
   end
   # rubocop:enable MethodLength
   # rubocop:enable CyclomaticComplexity
+
+  # TODO: refactor
+  def diff!(older_report)
+    self[:new_warnings] = warnings - older_report.warnings
+    self[:fixed_warnings] = older_report.warnings - warnings
+  end
+
+  def diffed?
+    return true if self[:new_warnings] && self[:fixed_warnings]
+    false
+  end
 end

@@ -1,6 +1,4 @@
 TODO:
-* Add Xenuti::Report class. Should hold info about repository, configuration options and subreports. Should be pretty-printable.
 * Allow GPG-encryption of the results.
 * Fix the command-line: add generate config option
-* Allow generating only diff of results from latest scan
 * Accept multiple email addresses to send results to (keep compat with GPG enc)

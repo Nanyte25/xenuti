@@ -39,21 +39,21 @@ describe Xenuti::Brakeman do
       it 'should compare warnings by confidence' do
         high = warning.clone
         medium = warning.clone
-        low = warning.clone
+        weak = warning.clone
 
         high['confidence'] = 'High'
-        low['confidence'] = 'Low'
+        weak['confidence'] = 'Weak'
         medium['confidence'] = 'Medium'
 
-        expect(high <=> low).to be_eql(-1)
+        expect(high <=> weak).to be_eql(-1)
         expect(high <=> medium).to be_eql(-1)
-        expect(medium <=> low).to be_eql(-1)
+        expect(medium <=> weak).to be_eql(-1)
 
-        expect(low <=> medium).to be_eql(1)
+        expect(weak <=> medium).to be_eql(1)
         expect(medium <=> high).to be_eql(1)
-        expect(low <=> high).to be_eql(1)
+        expect(weak <=> high).to be_eql(1)
 
-        expect(low <=> low).to be_eql(0)
+        expect(weak <=> weak).to be_eql(0)
         expect(medium <=> medium).to be_eql(0)
         expect(high <=> high).to be_eql(0)
       end

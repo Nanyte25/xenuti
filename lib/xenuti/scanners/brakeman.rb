@@ -10,7 +10,7 @@ class Xenuti::Brakeman
   include Xenuti::StaticAnalyzer
 
   class Warning < Xenuti::Warning
-    CONFIDENCE = %w(High Medium Low)
+    CONFIDENCE = %w(High Medium Weak)
 
     def <=>(other)
       CONFIDENCE.index(confidence) <=> CONFIDENCE.index(other.confidence)

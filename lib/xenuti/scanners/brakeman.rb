@@ -7,7 +7,7 @@
 require 'json'
 
 class Xenuti::Brakeman
-  include Xenuti::StaticAnalyzer
+  include Xenuti::Scanner
 
   class Warning < Xenuti::Warning
     CONFIDENCE = %w(High Medium Weak)
@@ -25,29 +25,30 @@ class Xenuti::Brakeman
     true
   end
 
-  def initialize(cfg)
-    super
-  end
-
-  def name
+  def self.name
     'brakeman'
   end
 
-  def version
+  def self.version
     @version ||= %x(brakeman -v).match(/\d\.\d\.\d/).to_s
   end
 
-  def run_scan
-    fail 'Brakeman is disabled' unless config.brakeman.enabled
-    @start_time = Time.now
-    @results = %x(brakeman -q -f json #{config.general.source})
-    @end_time = Time.now
+  def self.check_config(config)
+    config.verify do
+      fail unless general.source.is_a? String
+    end
+    true
   end
 
-  def parse_results(json_output)
+  def self.execute_scan(config)
+    fail 'Brakeman is disabled' unless config.brakeman.enabled
+    %x(brakeman -q -f json #{config.general.source})
+  end
+
+  def self.parse_results(json_output)
     report = Xenuti::ScannerReport.new
     JSON.load(json_output)['warnings'].each do |warn_hash|
-      report.warnings << Warning.from_hash(warn_hash)
+      report.warnings << Xenuti::Brakeman::Warning.from_hash(warn_hash)
     end
     report
   end

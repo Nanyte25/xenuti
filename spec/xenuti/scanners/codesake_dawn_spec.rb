@@ -5,7 +5,7 @@
 # MIT license.
 
 require 'spec_helper'
-require 'xenuti/scanners/static_analyzer_shared'
+require 'xenuti/scanners/scanner_shared'
 require 'helpers/alpha_helper'
 
 describe Xenuti::CodesakeDawn do
@@ -25,7 +25,7 @@ describe Xenuti::CodesakeDawn do
   end
   let(:warning) { Xenuti::CodesakeDawn::Warning.from_hash(warning_hash) }
 
-  it_behaves_like 'static_analyzer', Xenuti::CodesakeDawn
+  it_behaves_like 'scanner', Xenuti::CodesakeDawn
 
   describe 'Warning' do
     describe '::from_hash' do
@@ -74,32 +74,45 @@ describe Xenuti::CodesakeDawn do
     # rubocop:enable UselessComparison
   end
 
-  describe '#initialize' do
-    it 'should load config file' do
-      expect(codesake_dawn.config.codesake_dawn.enabled).to be_false
-    end
-  end
-
-  describe '#name' do
+  describe '::name' do
     it 'should be codesake_dawn' do
-      expect(codesake_dawn.name).to be_eql('codesake_dawn')
+      expect(Xenuti::CodesakeDawn.name).to be_eql('codesake_dawn')
     end
   end
 
-  describe '#version' do
+  describe '::version' do
     it 'should return string with CodesakeDawn version' do
       # TODO: enable test again
       # This test takes about 1 second, as invoking dawn is terribly slow,
       # so commenting this out.
 
-      # expect(codesake_dawn.version).to match(/\A\d\.\d\.\d\Z/)
+      # expect(Xenuti::CodesakeDawn::version).to match(/\A\d\.\d\.\d\Z/)
     end
   end
 
-  context '#run_scan' do
+  describe 'check_config' do
+    it 'should fail if source is not present in config' do
+      config.general.source = nil
+      expect do
+        Xenuti::CodesakeDawn.check_config(config)
+      end.to raise_error RuntimeError
+      config.general = nil
+      expect do
+        Xenuti::CodesakeDawn.check_config(config)
+      end.to raise_error NoMethodError
+    end
+
+    it 'should pass when source is present in config' do
+      expect(Xenuti::CodesakeDawn.check_config(config)).to be_true
+    end
+  end
+
+  context '::execute_scan' do
     it 'throws exception when called disabled' do
       config.codesake_dawn.enabled = false
-      expect { codesake_dawn.run_scan }.to raise_error(RuntimeError)
+      expect do
+        Xenuti::CodesakeDawn.execute_scan(config)
+      end.to raise_error(RuntimeError)
     end
 
     it 'runs scan and captures CodesakeDawn output' do
@@ -110,17 +123,15 @@ describe Xenuti::CodesakeDawn do
       # By default alpha_config has all scanners disabled.
       alpha_config.codesake_dawn.enabled = true
 
-      expect(alpha_codesake_dawn.instance_variable_get('@results')).to be_nil
-      alpha_codesake_dawn.run_scan
-      expect(
-        alpha_codesake_dawn.instance_variable_get('@results')
-      ).to be_a(String)
+      output = Xenuti::CodesakeDawn.execute_scan(alpha_config)
+      parsed = JSON.load(output.lines.to_a[1])
+      expect(parsed['vulnerabilities'].size).to be_eql(20)
     end
   end
 
-  describe '#parse_results' do
+  describe '::parse_results' do
     it 'should parse codesake_dawn output into ScannerReport correctly' do
-      report = codesake_dawn.parse_results(codesake_dawn_output)
+      report = Xenuti::CodesakeDawn.parse_results(codesake_dawn_output)
       expect(report).to be_a(Xenuti::ScannerReport)
       expect(report.warnings[0]).to be_a(Xenuti::CodesakeDawn::Warning)
       expect(report.warnings[0]['name']).to be_eql('CVE-2012-6496')

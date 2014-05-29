@@ -31,8 +31,13 @@ File.open(ALPHA_CONFIG, 'w+') do |file|
   file.write <<-EOF.unindent
     ---
     general:
+      name: Alpha
       repo: #{ALPHA_REPO}
       tmpdir: #{ALPHA_TMPDIR}
+      quiet: true
+      diff: false
+    smtp:
+      enabled: false
     brakeman:
       enabled: false
     codesake_dawn:

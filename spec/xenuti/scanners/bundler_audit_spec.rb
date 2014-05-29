@@ -5,13 +5,11 @@
 # MIT license.
 
 require 'spec_helper'
-require 'xenuti/scanners/static_analyzer_shared'
+require 'xenuti/scanners/scanner_shared'
 
 describe Xenuti::BundlerAudit do
   let(:config) { Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read) }
   let(:alpha_config) { Xenuti::Config.from_yaml(File.new(ALPHA_CONFIG).read) }
-  let(:bundler_audit) { Xenuti::BundlerAudit.new(config) }
-  let(:alpha_bundler_audit) { Xenuti::BundlerAudit.new(alpha_config) }
   let(:bundler_audit_output) { File.new(BUNDLER_AUDIT_OUTPUT).read }
   let(:warning_hash) do
     {
@@ -26,7 +24,7 @@ describe Xenuti::BundlerAudit do
   end
   let(:warning) { Xenuti::BundlerAudit::Warning.from_hash(warning_hash) }
 
-  it_behaves_like 'static_analyzer', Xenuti::BundlerAudit
+  it_behaves_like 'scanner', Xenuti::BundlerAudit
 
   describe 'Warning' do
     describe '::from_hash' do
@@ -67,28 +65,41 @@ describe Xenuti::BundlerAudit do
     # rubocop:enable UselessComparison
   end
 
-  describe '#initialize' do
-    it 'should load config file' do
-      expect(bundler_audit.config.bundler_audit.enabled).to be_true
-    end
-  end
-
-  describe '#name' do
+  describe '::name' do
     it 'should be bundler_audit' do
-      expect(bundler_audit.name).to be_eql('bundler_audit')
+      expect(Xenuti::BundlerAudit.name).to be_eql('bundler_audit')
     end
   end
 
-  describe '#version' do
+  describe '::version' do
     it 'should return string with BundlerAudit version' do
-      expect(bundler_audit.version).to match(/\A\d\.\d\.\d\Z/)
+      expect(Xenuti::BundlerAudit.version).to match(/\A\d\.\d\.\d\Z/)
     end
   end
 
-  describe '#run_scan' do
+  describe '::check_config' do
+    it 'should fail if source is not present in config' do
+      config.general.source = nil
+      expect do
+        Xenuti::BundlerAudit.check_config(config)
+      end.to raise_error RuntimeError
+      config.general = nil
+      expect do
+        Xenuti::BundlerAudit.check_config(config)
+      end.to raise_error NoMethodError
+    end
+
+    it 'should pass when source is present in config' do
+      expect(Xenuti::BundlerAudit.check_config(config)).to be_true
+    end
+  end
+
+  describe '::execute_scan' do
     it 'throws exception when called disabled' do
       config.bundler_audit.enabled = false
-      expect { bundler_audit.run_scan }.to raise_error(RuntimeError)
+      expect do
+        Xenuti::BundlerAudit.execute_scan(config)
+      end.to raise_error(RuntimeError)
     end
 
     it 'runs scan and captures BundlerAudit output' do
@@ -99,17 +110,14 @@ describe Xenuti::BundlerAudit do
       # By default alpha_config has all scanners disabled.
       alpha_config.bundler_audit.enabled = true
 
-      expect(alpha_bundler_audit.instance_variable_get('@results')).to be_nil
-      alpha_bundler_audit.run_scan
-      expect(
-        alpha_bundler_audit.instance_variable_get('@results')
-      ).to be_a(String)
+      output = Xenuti::BundlerAudit.execute_scan(alpha_config)
+      expect(output.scan(/Name:.*?Solution:.*?\n/m).size).to be_eql(15)
     end
   end
 
-  describe '#parse_results' do
+  describe '::parse_results' do
     it 'should parse bunler audit output into :ReScannerReportport correctly' do
-      report = bundler_audit.parse_results(bundler_audit_output)
+      report = Xenuti::BundlerAudit.parse_results(bundler_audit_output)
       expect(report).to be_a(Xenuti::ScannerReport)
       expect(report.warnings[1]).to be_a(Xenuti::BundlerAudit::Warning)
       expect(report.warnings[1].advisory).to be_eql('OSVDB-100527')

@@ -7,7 +7,7 @@
 require 'ruby_util/dir'
 
 class Xenuti::BundlerAudit
-  include Xenuti::StaticAnalyzer
+  include Xenuti::Scanner
 
   class Warning < Xenuti::Warning
     CRITICALITY = %w(High Medium Low Unknown)
@@ -23,33 +23,35 @@ class Xenuti::BundlerAudit
     true
   end
 
-  def initialize(cfg)
-    super
-  end
-
-  def name
+  def self.name
     'bundler_audit'
   end
 
-  def version
+  def self.version
     @version ||= %x(bundle-audit version).match(/\d\.\d\.\d/).to_s
   end
 
-  def run_scan
+  def self.check_config(config)
+    config.verify do
+      fail unless general.source.is_a? String
+    end
+    true
+  end
+
+  def self.execute_scan(config)
     fail 'BundlerAudit is disabled' unless config.bundler_audit.enabled
     fail 'Cannot find Gemfile.lock' unless gemfile?(config.general.source)
 
+    update_database
     Dir.jumpd(config.general.source) do
-      @start_time = Time.now
-      @results = %x(bundle-audit)
-      @end_time = Time.now
+      return %x(bundle-audit)
     end
   end
 
   # rubocop:disable MethodLength
-  def parse_results(res)
+  def self.parse_results(output)
     report = Xenuti::ScannerReport.new
-    res.scan(/Name:.*?Solution:.*?\n/m).each do |w|
+    output.scan(/Name:.*?Solution:.*?\n/m).each do |w|
       warn_hash = {}
       warn_hash[:name] = w.match(/(?<=Name: ).*?\n/)[0].strip
       warn_hash[:version] = w.match(/(?<=Version: ).*?\n/)[0].strip
@@ -58,18 +60,18 @@ class Xenuti::BundlerAudit
       warn_hash[:url] = w.match(/(?<=URL: ).*?\n/)[0].strip
       warn_hash[:title] = w.match(/(?<=Title: ).*?\n/)[0].strip
       warn_hash[:solution] = w.match(/(?<=Solution: ).*?\n/)[0].strip
-      report.warnings << Warning.from_hash(warn_hash)
+      report.warnings << Xenuti::BundlerAudit::Warning.from_hash(warn_hash)
     end
     report
   end
   # rubocop:enable MethodLength
 
-  def gemfile?(app_path)
+  def self.gemfile?(app_path)
     File.exist?(app_path + '/Gemfile.lock')
   end
 
-  def update_database
-    %x(bundle-audit update)
+  def self.update_database
+    %x(bundle-audit update &>/dev/null)
     fail 'Failed to update BundlerAudit database' if $?.exitstatus != 0
   end
 end

@@ -5,14 +5,12 @@
 # MIT license.
 
 require 'spec_helper'
-require 'xenuti/scanners/static_analyzer_shared'
+require 'xenuti/scanners/scanner_shared'
 require 'helpers/alpha_helper'
 
 describe Xenuti::Brakeman do
   let(:config) { Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read) }
   let(:alpha_config) { Xenuti::Config.from_yaml(File.new(ALPHA_CONFIG).read) }
-  let(:brakeman) { Xenuti::Brakeman.new(config) }
-  let(:alpha_brakeman) { Xenuti::Brakeman.new(alpha_config) }
   let(:brakeman_output) { File.new(BRAKEMAN_OUTPUT).read }
   let(:warning_hash) do
     {
@@ -25,7 +23,7 @@ describe Xenuti::Brakeman do
   end
   let(:warning) { Xenuti::Brakeman::Warning.from_hash(warning_hash) }
 
-  it_behaves_like 'static_analyzer', Xenuti::Brakeman
+  it_behaves_like 'scanner', Xenuti::Brakeman
 
   describe 'Warning' do
     describe '::from_hash' do
@@ -61,31 +59,44 @@ describe Xenuti::Brakeman do
     # rubocop:enable UselessComparison
   end
 
-  describe '#initialize' do
-    it 'should load config file' do
-      expect(brakeman.config.brakeman.enabled).to be_true
-    end
-  end
-
-  describe '#name' do
+  describe '::name' do
     it 'should be brakeman' do
-      expect(brakeman.name).to be_eql('brakeman')
+      expect(Xenuti::Brakeman.name).to be_eql('brakeman')
     end
   end
 
-  describe '#version' do
+  describe '::version' do
     it 'should return string with Brakeman version' do
-      expect(brakeman.version).to match(/\A\d\.\d\.\d\Z/)
+      expect(Xenuti::Brakeman.version).to match(/\A\d\.\d\.\d\Z/)
     end
   end
 
-  describe '#run_scan' do
+  describe '::check_config' do
+    it 'should fail if source is not present in config' do
+      config.general.source = nil
+      expect do
+        Xenuti::Brakeman.check_config(config)
+      end.to raise_error RuntimeError
+      config.general = nil
+      expect do
+        Xenuti::Brakeman.check_config(config)
+      end.to raise_error NoMethodError
+    end
+
+    it 'should pass when source is present in config' do
+      expect(Xenuti::Brakeman.check_config(config)).to be_true
+    end
+  end
+
+  describe '::execute_scan' do
     it 'throws exception when called disabled' do
       config.brakeman.enabled = false
-      expect { brakeman.run_scan }.to raise_error(RuntimeError)
+      expect do
+        Xenuti::Brakeman.execute_scan(config)
+      end.to raise_error(RuntimeError)
     end
 
-    it 'runs scan and captures Brakeman output' do
+    it 'runs scan and returns Brakeman output in JSON' do
       # Small hack - I don`t want to clone the repo to get source, so just
       # hardcode it like this
       alpha_config.general.source = alpha_config.general.repo
@@ -93,15 +104,15 @@ describe Xenuti::Brakeman do
       # By default alpha_config has all scanners disabled.
       alpha_config.brakeman.enabled = true
 
-      expect(alpha_brakeman.instance_variable_get('@results')).to be_nil
-      alpha_brakeman.run_scan
-      expect(alpha_brakeman.instance_variable_get('@results')).to be_a(String)
+      output = Xenuti::Brakeman.execute_scan(alpha_config)
+      parsed = JSON.load(output)
+      expect(parsed['scan_info']['app_path']).to be_eql(ALPHA_REPO)
     end
   end
 
-  describe '#parse_results' do
+  describe '::parse_results' do
     it 'should parse brakeman output into ScannerReport correctly' do
-      report = brakeman.parse_results(brakeman_output)
+      report = Xenuti::Brakeman.parse_results(brakeman_output)
       expect(report).to be_a(Xenuti::ScannerReport)
       expect(report.warnings[1]).to be_a(Xenuti::Brakeman::Warning)
       expect(report.warnings[1][:warning_code]).to be_eql(73)

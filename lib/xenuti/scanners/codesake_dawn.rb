@@ -7,7 +7,7 @@
 require 'json'
 
 class Xenuti::CodesakeDawn
-  include Xenuti::StaticAnalyzer
+  include Xenuti::Scanner
 
   class Warning < Xenuti::Warning
     SEVERITY = %w(critical high medium low info unknown)
@@ -25,32 +25,33 @@ class Xenuti::CodesakeDawn
     true
   end
 
-  def initialize(cfg)
-    super
-  end
-
-  def name
+  def self.name
     'codesake_dawn'
   end
 
-  def version
+  def self.version
     @version ||= %x(dawn -v).match(/\d\.\d\.\d/).to_s
   end
 
-  def run_scan
+  def self.check_config(config)
+    config.verify do
+      fail unless general.source.is_a? String
+    end
+    true
+  end
+
+  def self.execute_scan(config)
     fail 'CodesakeDawn is disabled' unless config.codesake_dawn.enabled
     gemfile_lock_path = config.general.source + '/Gemfile.lock'
     fail 'Cannot find Gemfile.lock' unless File.exist?(gemfile_lock_path)
 
-    @start_time = Time.now
-    @results = %x(dawn -j #{config.general.source})
-    @end_time = Time.now
+    %x(dawn -j #{config.general.source})
   end
 
-  def parse_results(json_output)
+  def self.parse_results(json_output)
     report = Xenuti::ScannerReport.new
     JSON.load(json_output.lines.to_a[1])['vulnerabilities'].each do |warn_hash|
-      report.warnings << Warning.from_hash(warn_hash)
+      report.warnings << Xenuti::CodesakeDawn::Warning.from_hash(warn_hash)
     end
     report
   end

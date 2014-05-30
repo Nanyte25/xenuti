@@ -50,4 +50,27 @@ class Hash
     end
     maxlen
   end
+
+  def recursive_merge(other)
+    result = clone
+    other.each do |key, value|
+      if result[key].is_a?(Hash) && value.is_a?(Hash)
+        result[key].recursive_merge!(value)
+      else
+        result[key] = value
+      end
+    end
+    result
+  end
+
+  def recursive_merge!(other)
+    other.each do |key, value|
+      if self[key].is_a?(Hash) && value.is_a?(Hash)
+        self[key].recursive_merge!(value)
+      else
+        self[key] = value
+      end
+    end
+    self
+  end
 end

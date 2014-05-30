@@ -37,4 +37,33 @@ describe Hash do
       expect(hash.key_maxlen).to be_eql(0)
     end
   end
+
+  describe '#recursive_merge' do
+    it 'should return new hash' do
+      hash1 = { a: 1, b: 2 }
+      hash2 = { a: 2, c: 3 }
+      expect(hash1.recursive_merge(hash2)).to be_eql(a: 2, b: 2, c: 3)
+      expect(hash1).to be_eql(a: 1, b: 2)
+      expect(hash2).to be_eql(a: 2, c: 3)
+    end
+
+    it 'should merge correctly' do
+      hash1 = { a: 1, b: { c: 2, d: 3 }, e: { f: 4 } }
+      hash2 = { b: { c: 5 }, e: 6 }
+      result = hash1.recursive_merge(hash2)
+      puts "Result: #{result.inspect}"
+      expect(result).to be_eql(a: 1, b: { c: 5, d: 3 }, e: 6)
+    end
+  end
+
+  describe '#recursive_merge!' do
+    it 'should merge correctly' do
+      hash1 = { a: 1, b: { c: 2, d: 3 }, e: { f: 4 } }
+      hash2 = { b: { c: 5 }, e: 6 }
+      hash1.recursive_merge!(hash2)
+      puts "Result: #{hash1.inspect}"
+
+      expect(hash1).to be_eql(a: 1, b: { c: 5, d: 3 }, e: 6)
+    end
+  end
 end

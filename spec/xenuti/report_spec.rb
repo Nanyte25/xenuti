@@ -12,36 +12,44 @@ require 'ruby_util/string'
 
 describe Xenuti::Report do
   let(:report) { Xenuti::Report.new }
+  let(:tmp) do
+    tmp = Dir.mktmpdir
+    at_exit do
+      FileUtils.rm_rf(tmp)
+    end
+    tmp
+  end
 
-  # This does not work, as constructor takes config as an argument
+  # This does not work, as constructor initializes the hash
   # It is fine though, since method access is tested on other places anyway
   # it_behaves_like 'hash with method access', Xenuti::Report.new
 
   describe '::latest_report' do
     it 'should return the latest report' do
-      tmp = Dir.mktmpdir
-      at_exit do
-        FileUtils.rm_rf(tmp)
-      end
+      Dir.mkdir tmp + '/reports'
+      newer = '2014-05-30T15:38:04+02:00'
+      older = '2014-05-30T15:37:04+02:00'
 
-      Dir.mkdir tmp + '/reports/'
-      File.open(tmp + '/reports/newer_report', 'w+') do |file|
+      Dir.mkdir tmp + '/reports/' + newer
+      File.open(tmp + '/reports/' + newer + '/report.yml', 'w+') do |file|
         file.write <<-EOF.unindent
         --- !ruby/hash:Xenuti::Report
         :scan_info:
           :version: 0.0.1
-          :start_time: 2014-05-27 15:45:43.858138132 +02:00
+          :start_time: 2014-05-30 15:37:04.001 +02:00
         :scanner_reports: []
         :config: {}
         :name: :new
         EOF
       end
-      File.open(tmp + '/reports/older_report', 'w+') do |file|
+
+      Dir.mkdir tmp + '/reports/' + older
+      File.open(tmp + '/reports/' + older + '/report.yml', 'w+') do |file|
         file.write <<-EOF.unindent
         --- !ruby/hash:Xenuti::Report
         :scan_info:
           :version: 0.0.1
-          :start_time: 2014-05-27 15:45:42.858138132 +02:00
+          :start_time: 2014-05-27 15:37:04.002 +02:00
         :scanner_reports: []
         :config: {}
         :name: :old
@@ -58,17 +66,23 @@ describe Xenuti::Report do
     end
   end
 
+  describe '#reports_dir' do
+    it 'output should be the same across multiple calls' do
+      config = Xenuti::Config.from_hash(general: { tmpdir: tmp })
+      reports_dir1 = report.reports_dir(config)
+      reports_dir2 = report.reports_dir(config)
+      expect(reports_dir1).to be_eql(reports_dir2)
+    end
+  end
+
   describe '#save and ::load' do
     it 'report should be identical after saving and loading again' do
-      tmp = Dir.mktmpdir
+      config = Xenuti::Config.from_hash(general: { tmpdir: tmp })
       report[:config] = { general: { tmpdir: tmp } }
-      at_exit do
-        FileUtils.rm_rf(tmp)
-      end
-
-      report.save
-      report_file = Dir.glob(tmp + '/reports/*').first
-      expect(Xenuti::Report.load(report_file)).to be_eql(report)
+      report.scan_info.start_time = Time.now
+      report.save(config)
+      latest = Xenuti::Report.latest_report(config)
+      expect(latest).to be_eql(report)
     end
   end
 

@@ -23,7 +23,7 @@ class Xenuti::ScannerReport < Hash
 
   def formatted
     report = formatted_header
-    report << formatted_warnings unless scan_info.exception
+    report << formatted_warnings unless scan_info[:exception]
     report
   end
 
@@ -34,7 +34,7 @@ class Xenuti::ScannerReport < Hash
     version:  #{scan_info.scanner_version}
     duration: #{scan_info.duration} s
     EOF
-    header << formatted_header_exception if scan_info.exception
+    header << formatted_header_exception if scan_info[:exception]
     header << formatted_header_end_banner
   end
 

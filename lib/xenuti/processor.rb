@@ -18,7 +18,6 @@ class Xenuti::Processor
 
   def run
     report = Xenuti::Report.new
-    report.config = config
     report.scan_info.start_time = Time.now
 
     check_requirements
@@ -27,7 +26,7 @@ class Xenuti::Processor
 
     report.scan_info.end_time = Time.now
     output_results(report)
-    report.save
+    report.save(config)
   end
 
   def check_requirements

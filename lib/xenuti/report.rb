@@ -12,20 +12,19 @@ class Xenuti::Report < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
-  def self.load(filename)
-    YAML.load(File.new(filename).read, safe: true, deserialize_symbols: true)
-  end
+  REPORT_NAME = 'report.yml'
 
-  def self.reports_dir(config)
-    config.general.tmpdir + '/reports'
+  # TODO: figure out SafeYAML to call this with safe: true
+  def self.load(filename)
+    YAML.load(File.new(filename).read, safe: false)
   end
 
   def self.latest_report(config)
-    reportfiles = Dir.glob reports_dir(config) + '/*'
+    reportfiles = Dir.glob config.general.tmpdir + '/reports/**/' + REPORT_NAME
     latest_time = Time.at(0)
     latest = nil
     reportfiles.each do |reportfile|
-      report = YAML.load(File.new(reportfile).read, safe: false)
+      report = load(reportfile)
       latest = report[:scan_info][:start_time] > latest_time ? report : latest
       latest_time = latest.scan_info.start_time
     end
@@ -44,9 +43,9 @@ class Xenuti::Report < Hash
     @diffed = false
   end
 
-  def save
-    Dir.mkdir reports_dir(config) unless Dir.exist? reports_dir(config)
-    filename = reports_dir(config) + '/' + Time.now.to_datetime.rfc3339
+  def save(config)
+    FileUtils.mkdir_p reports_dir(config) unless Dir.exist? reports_dir(config)
+    filename = reports_dir(config) + '/' + REPORT_NAME
     File.open(filename, 'w+') do |file|
       file.write(YAML.dump(self))
     end
@@ -122,6 +121,6 @@ class Xenuti::Report < Hash
   end
 
   def reports_dir(config)
-    self.class.reports_dir(config)
+    @dir ||= config.general.tmpdir + '/reports/' + Time.now.to_datetime.rfc3339
   end
 end

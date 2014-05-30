@@ -51,7 +51,6 @@ describe Hash do
       hash1 = { a: 1, b: { c: 2, d: 3 }, e: { f: 4 } }
       hash2 = { b: { c: 5 }, e: 6 }
       result = hash1.recursive_merge(hash2)
-      puts "Result: #{result.inspect}"
       expect(result).to be_eql(a: 1, b: { c: 5, d: 3 }, e: 6)
     end
   end
@@ -61,8 +60,6 @@ describe Hash do
       hash1 = { a: 1, b: { c: 2, d: 3 }, e: { f: 4 } }
       hash2 = { b: { c: 5 }, e: 6 }
       hash1.recursive_merge!(hash2)
-      puts "Result: #{hash1.inspect}"
-
       expect(hash1).to be_eql(a: 1, b: { c: 5, d: 3 }, e: 6)
     end
   end

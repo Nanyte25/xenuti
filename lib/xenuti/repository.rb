@@ -60,7 +60,7 @@ class Xenuti::Repository
     end
 
     def app_dir(root_dir, relative_path)
-      File.expand_path(root_dir) << (relative_path ? relative_path : '')
+      File.expand_path(root_dir) << '/' + (relative_path ? relative_path : '')
     end
   end
 end

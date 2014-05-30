@@ -8,14 +8,16 @@ class Xenuti::Repository
   class << self
     # TODO: add git to dependencies
 
-    def fetch_source(config, destination)
+    def fetch_source(cfg, destination)
+      destination = File.expand_path(destination)
       if git_repo?(destination)
         update(destination)
       else
-        clone(config.general.repo, destination)
+        clone(cfg.general.repo, destination)
       end
-      config.general.source = destination
-      config.general.revision = revision(destination)
+      cfg.general.source = destination
+      cfg.general.revision = revision(destination)
+      cfg.general.app_dir = app_dir(destination, cfg.general.relative_path)
     end
 
     def clone(source, destination)
@@ -55,6 +57,10 @@ class Xenuti::Repository
       ensure
         Dir.chdir cwd
       end
+    end
+
+    def app_dir(root_dir, relative_path)
+      File.expand_path(root_dir) << (relative_path ? relative_path : '')
     end
   end
 end

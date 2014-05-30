@@ -40,10 +40,11 @@ class Xenuti::BundlerAudit
 
   def self.execute_scan(config)
     fail 'BundlerAudit is disabled' unless config.bundler_audit.enabled
-    fail 'Cannot find Gemfile.lock' unless gemfile?(config.general.source)
+    gemfile_lock_path = config.general.app_dir + '/Gemfile.lock'
+    fail 'Cannot find Gemfile.lock' unless File.exist?(gemfile_lock_path)
 
     update_database
-    Dir.jumpd(config.general.source) do
+    Dir.jumpd(config.general.app_dir) do
       return %x(bundle-audit)
     end
   end
@@ -65,10 +66,6 @@ class Xenuti::BundlerAudit
     report
   end
   # rubocop:enable MethodLength
-
-  def self.gemfile?(app_path)
-    File.exist?(app_path + '/Gemfile.lock')
-  end
 
   def self.update_database
     %x(bundle-audit update &>/dev/null)

@@ -99,7 +99,7 @@ describe Xenuti::Brakeman do
     it 'runs scan and returns Brakeman output in JSON' do
       # Small hack - I don`t want to clone the repo to get source, so just
       # hardcode it like this
-      alpha_config.general.source = alpha_config.general.repo
+      alpha_config.general.app_dir = alpha_config.general.repo
 
       # By default alpha_config has all scanners disabled.
       alpha_config.brakeman.enabled = true

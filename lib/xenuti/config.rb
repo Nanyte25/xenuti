@@ -13,11 +13,42 @@ class Xenuti::Config < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
+  DEFAULT_CONFIG = {
+    general: {
+      name: nil,
+      repo: nil,
+      tmpdir: nil,
+      quiet: false,
+      diff: false
+    },
+    smtp: {
+      enabled: false,
+      from: nil,
+      to: nil,
+      server: nil,
+      port: nil
+    },
+    brakeman: {
+      enabled: true
+    },
+    codesake_dawn: {
+      enabled: true
+    },
+    bundler_audit: {
+      enabled: true
+    }
+  }
+
   def self.from_hash(hash)
     new.merge! hash.deep_symbolize_keys
   end
 
   def self.from_yaml(yaml_string)
     from_hash(YAML.load(yaml_string, safe: true))
+  end
+
+  def initialize
+    super
+    self.merge! DEFAULT_CONFIG
   end
 end

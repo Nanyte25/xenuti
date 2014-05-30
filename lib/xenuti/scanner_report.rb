@@ -16,36 +16,49 @@ class Xenuti::ScannerReport < Hash
   def initialize
     self[:scan_info] = {
       start_time: nil, end_time: nil, duration: nil,
-      scanner_name: nil, scanner_version: nil }
+      scanner_name: nil, scanner_version: nil, exception: nil }
 
     self[:warnings] = []
   end
 
-  # TODO: refactor
-  # rubocop:disable MethodLength
-  # rubocop:disable CyclomaticComplexity
   def formatted
-    report = <<-EOF.unindent
-    ============================
+    report = formatted_header
+    report << formatted_warnings unless scan_info.exception
+    report
+  end
+
+  def formatted_header
+    header = <<-EOF.unindent
+    ==============================
     scanner:  #{scan_info.scanner_name}
     version:  #{scan_info.scanner_version}
     duration: #{scan_info.duration} s
-    ============================
     EOF
-    warn_to_print = diffed? ? new_warnings : warnings
-    if warn_to_print.size == 0
-      report << "No new warnings.\n"
+    header << formatted_header_exception if scan_info.exception
+    header << formatted_header_end_banner
+  end
+
+  def formatted_header_exception
+    "\nERROR: " + scan_info.exception.message + "\n"
+  end
+
+  def formatted_header_end_banner
+    '=' * 30 + "\n"
+  end
+
+  def formatted_warnings
+    output = ''
+    warns_to_print = diffed? ? new_warnings : warnings
+    if warns_to_print.size == 0
+      output << "No new warnings.\n"
     else
-      warn_to_print.sort.each do |warning|
-        report << warning.formatted + "\n"
+      warns_to_print.sort.each do |warning|
+        output << warning.formatted + "\n"
       end
     end
-    report
+    output
   end
-  # rubocop:enable MethodLength
-  # rubocop:enable CyclomaticComplexity
 
-  # TODO: refactor
   def diff!(older_report)
     self[:new_warnings] = warnings - older_report.warnings
     self[:fixed_warnings] = older_report.warnings - warnings

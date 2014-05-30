@@ -15,24 +15,35 @@ module Xenuti::Scanner
     @config[self.class.name][:enabled]
   end
 
+  # rubocop:disable RescueException
   def run_scan
     @start_time = Time.now
-    @output = self.class.execute_scan(@config)
+    begin
+      @output = self.class.execute_scan(@config)
+    rescue Exception => e
+      @exception = e
+    end
     @end_time = Time.now
   end
+  # rubocop:enable RescueException
 
-  def report
-    if @report.nil?
-      @report = self.class.parse_results(@output)
+  # TODO: refactor
+  # rubocop:disable MethodLength
+  def scanner_report
+    if @scanner_report.nil?
+      @scanner_report = self.class.parse_results(@output) unless @exception
+      @scanner_report ||= Xenuti::ScannerReport.new
 
       # Fill in the metadata
-      @report.scan_info.start_time = @start_time
-      @report.scan_info.end_time = @end_time
-      @report.scan_info.duration = (@end_time - @start_time).round(2)
-      @report.scan_info.scanner_name = self.class.name
-      @report.scan_info.scanner_version = self.class.version
+      @scanner_report.scan_info.start_time = @start_time
+      @scanner_report.scan_info.end_time = @end_time
+      @scanner_report.scan_info.duration = (@end_time - @start_time).round(2)
+      @scanner_report.scan_info.scanner_name = self.class.name
+      @scanner_report.scan_info.scanner_version = self.class.version
+      @scanner_report.scan_info.exception = @exception if @exception
     end
 
-    @report
+    @scanner_report
   end
+  # rubocop:enable MethodLength
 end

@@ -18,6 +18,7 @@ class Xenuti::Config < Hash
       name: nil,
       repo: nil,
       tmpdir: nil,
+      relative_path: '',
       quiet: false,
       diff: false
     },
@@ -40,7 +41,7 @@ class Xenuti::Config < Hash
   }
 
   def self.from_hash(hash)
-    new.merge! hash.deep_symbolize_keys
+    new.recursive_merge! hash.deep_symbolize_keys
   end
 
   def self.from_yaml(yaml_string)

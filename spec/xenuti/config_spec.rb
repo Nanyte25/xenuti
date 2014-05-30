@@ -32,6 +32,8 @@ describe Xenuti::Config do
     it 'should have default values merged in' do
       config = Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read)
       expect(config.smtp.enabled).to be_false
+      expect(config.general.quiet).to be_false
+      expect(config.general.relative_path).to be_eql('')
     end
   end
 
@@ -40,7 +42,9 @@ describe Xenuti::Config do
       config = Xenuti::Config.from_hash(hash)
       expect(config[:general][:repo]).to be_eql('git@example.com:user/repo')
       expect(config[:general][:tmpdir]).to be_nil
-      expect(config[:smtp][:enabled]).to be_false
+      expect(config.general.quiet).to be_false
+      expect(config.general.relative_path).to be_eql('')
+      expect(config.smtp.enabled).to be_false
       expect(config[:brakeman][:enabled]).to be_false
       expect(config[:bundler_audit][:enabled]).to be_true
     end

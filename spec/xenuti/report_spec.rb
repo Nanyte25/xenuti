@@ -56,12 +56,12 @@ describe Xenuti::Report do
         EOF
       end
 
-      config = Xenuti::Config.from_hash(general: { tmpdir: tmp })
+      config = Xenuti::Config.from_hash(general: { workdir: tmp })
       expect(Xenuti::Report.prev_report(config).name).to be_eql(:new)
     end
 
     it 'should return nil when directory does not contain any report yet' do
-      config = Xenuti::Config.from_hash(general: { tmpdir: FIXTURES })
+      config = Xenuti::Config.from_hash(general: { workdir: FIXTURES })
       expect(Xenuti::Report.prev_report(config)).to be_eql(nil)
     end
   end
@@ -74,7 +74,7 @@ describe Xenuti::Report do
 
   describe '#reports_dir' do
     it 'output should be the same across multiple calls' do
-      config = Xenuti::Config.from_hash(general: { tmpdir: tmp })
+      config = Xenuti::Config.from_hash(general: { workdir: tmp })
       reports_dir1 = report.reports_dir(config)
       reports_dir2 = report.reports_dir(config)
       expect(reports_dir1).to be_eql(reports_dir2)
@@ -83,8 +83,8 @@ describe Xenuti::Report do
 
   describe '#save and ::load' do
     it 'report should be identical after saving and loading again' do
-      config = Xenuti::Config.from_hash(general: { tmpdir: tmp })
-      report[:config] = { general: { tmpdir: tmp } }
+      config = Xenuti::Config.from_hash(general: { workdir: tmp })
+      report[:config] = { general: { workdir: tmp } }
       report.scan_info.start_time = Time.now
       report.save(config)
       latest = Xenuti::Report.prev_report(config)

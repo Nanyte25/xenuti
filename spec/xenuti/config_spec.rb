@@ -41,7 +41,7 @@ describe Xenuti::Config do
     it 'should create config from hash with merged in default values' do
       config = Xenuti::Config.from_hash(hash)
       expect(config[:general][:repo]).to be_eql('git@example.com:user/repo')
-      expect(config[:general][:tmpdir]).to be_nil
+      expect(config[:general][:workdir]).to be_nil
       expect(config.general.quiet).to be_false
       expect(config.general.relative_path).to be_eql('')
       expect(config.smtp.enabled).to be_false

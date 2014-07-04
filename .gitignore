@@ -6,3 +6,4 @@ tmp
 coverage
 spec/fixtures/alpha_config.yml
 .tags*
+doc/

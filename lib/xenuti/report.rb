@@ -22,7 +22,7 @@ class Xenuti::Report < Hash
   end
 
   def self.prev_report(config)
-    reportfiles = Dir.glob config.general.tmpdir + '/reports/**/' + REPORT_NAME
+    reportfiles = Dir.glob config.general.workdir + '/reports/**/' + REPORT_NAME
     latest_time = Time.at(0)
     latest = nil
     reportfiles.each do |reportfile|
@@ -125,6 +125,6 @@ class Xenuti::Report < Hash
   end
 
   def reports_dir(config)
-    @dir ||= config.general.tmpdir + '/reports/' + Time.now.to_datetime.rfc3339
+    @dir ||= config.general.workdir + '/reports/' + Time.now.to_datetime.rfc3339
   end
 end

@@ -17,7 +17,7 @@ require 'ruby_util/string'
 require 'fileutils'
 
 ALPHA_REPO = Dir.mktmpdir
-ALPHA_TMPDIR = Dir.mktmpdir
+ALPHA_WORKDIR = Dir.mktmpdir
 ALPHA_CONFIG = FIXTURES + '/alpha_config.yml'
 
 FileUtils.cp_r(FIXTURES + '/alpha/.', ALPHA_REPO)
@@ -33,7 +33,7 @@ File.open(ALPHA_CONFIG, 'w+') do |file|
     general:
       name: Alpha
       repo: #{ALPHA_REPO}
-      tmpdir: #{ALPHA_TMPDIR}
+      workdir: #{ALPHA_WORKDIR}
       quiet: true
       diff: false
     smtp:
@@ -49,5 +49,5 @@ end
 
 at_exit do
   FileUtils.rm_rf(ALPHA_REPO)
-  FileUtils.rm_rf(ALPHA_TMPDIR)
+  FileUtils.rm_rf(ALPHA_WORKDIR)
 end

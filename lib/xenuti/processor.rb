@@ -38,7 +38,7 @@ class Xenuti::Processor
   end
 
   def checkout_code
-    Xenuti::Repository.fetch_source(config, config.general.tmpdir + '/source')
+    Xenuti::Repository.fetch_source(config, config.general.workdir + '/source')
   end
 
   def run_static_analysis(report)

@@ -42,7 +42,6 @@ class Xenuti::Brakeman
 
   def self.execute_scan(config)
     fail 'Brakeman is disabled' unless config.brakeman.enabled
-    puts "Runing brakmean against #{config.general.app_dir}"
     %x(brakeman -q -f json #{config.general.app_dir})
   end
 

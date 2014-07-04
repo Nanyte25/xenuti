@@ -17,7 +17,7 @@ class Xenuti::Config < Hash
     general: {
       name: nil,
       repo: nil,
-      tmpdir: nil,
+      workdir: nil,
       relative_path: '',
       quiet: false,
       diff: false

@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Save this as .git/hooks/pre-commit
+
+result=0
+
+# Run the tests
+rake spec &>/dev/null
+result=$(( $? == 0 ? $result : 1 ))
+
+# Run Rubocop
+rake rubocop &> /dev/null
+result=$(( $? == 0 ? $result : 1 ))
+
+if [ $result != 0 ]; then 
+  echo "Git pre-commit hook failed."
+fi
+
+exit $result

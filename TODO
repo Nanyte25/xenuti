@@ -3,5 +3,4 @@ TODO:
 * Fix the command-line: add generate config option
 * Accept multiple email addresses to send results to (keep compat with GPG enc)
 * Add ability to gather error and log messages from scanners and display them in the report
-* Catch exceptions raised by scanners and fail graciously
 * Save the output from scanners to results directory for further debugging

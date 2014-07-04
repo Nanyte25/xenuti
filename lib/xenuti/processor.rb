@@ -22,16 +22,18 @@ class Xenuti::Processor
 
     check_requirements
     checkout_code
+    report.scan_info.revision = config.general.revision
     run_static_analysis(report)
 
     report.scan_info.end_time = Time.now
-    output_results(report)
+    result = output_results(report)
     report.save(config)
+    result
   end
 
   def check_requirements
     STATIC_ANALYZERS.each do |analyzer|
-      analyzer.check_requirements(config)
+      analyzer.check_requirements(config) if config[analyzer.name][:enabled]
     end
   end
 
@@ -41,8 +43,8 @@ class Xenuti::Processor
 
   def run_static_analysis(report)
     STATIC_ANALYZERS.each do |klass|
-      scanner = klass.new(config)
-      if scanner.enabled?
+      if config[klass.name][:enabled]
+        scanner = klass.new(config)
         scanner.run_scan
         report.scanner_reports << scanner.scanner_report
       end
@@ -50,9 +52,11 @@ class Xenuti::Processor
   end
 
   def output_results(report)
-    report.diff!(Xenuti::Report.latest_report(config)) if config.general.diff
+    report = Xenuti::Report.diff(Xenuti::Report.prev_report(config), report) \
+      if config.general.diff
     formatted = report.formatted(config)
     puts formatted unless config.general.quiet
     Xenuti::ReportSender.new(config).send(formatted) if config.smtp.enabled
+    report
   end
 end

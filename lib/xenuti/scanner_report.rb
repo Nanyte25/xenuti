@@ -8,10 +8,21 @@ require 'ruby_util/hash'
 require 'ruby_util/string'
 require 'ruby_util/hash_with_method_access'
 require 'ruby_util/hash_with_constraints'
+require 'yaml'
 
 class Xenuti::ScannerReport < Hash
   include HashWithMethodAccess
   include HashWithConstraints
+
+  def self.diff(old_report, new_report)
+    report = Xenuti::ScannerReport.new
+    # TODO: refactor deep clone
+    report[:scan_info] = YAML.load(YAML.dump(new_report.scan_info), safe: false)
+    report[:warnings] = YAML.load(YAML.dump(new_report.warnings), safe: false)
+    report[:new_warnings] = new_report.warnings - old_report.warnings
+    report[:fixed_warnings] = old_report.warnings - new_report.warnings
+    report
+  end
 
   def initialize
     self[:scan_info] = {
@@ -57,11 +68,6 @@ class Xenuti::ScannerReport < Hash
       end
     end
     output
-  end
-
-  def diff!(older_report)
-    self[:new_warnings] = warnings - older_report.warnings
-    self[:fixed_warnings] = older_report.warnings - warnings
   end
 
   def diffed?

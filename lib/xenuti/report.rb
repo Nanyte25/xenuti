@@ -12,6 +12,8 @@ class Xenuti::Report < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
+  attr_accessor :diffed
+
   REPORT_NAME = 'report.yml'
 
   # TODO: figure out SafeYAML to call this with safe: true
@@ -19,7 +21,7 @@ class Xenuti::Report < Hash
     YAML.load(File.new(filename).read, safe: false)
   end
 
-  def self.latest_report(config)
+  def self.prev_report(config)
     reportfiles = Dir.glob config.general.tmpdir + '/reports/**/' + REPORT_NAME
     latest_time = Time.at(0)
     latest = nil
@@ -29,6 +31,19 @@ class Xenuti::Report < Hash
       latest_time = latest.scan_info.start_time
     end
     latest
+  end
+
+  def self.diff(old_report, new_report)
+    report = Xenuti::Report.new
+    report.scan_info = new_report.scan_info
+    new_report.scanner_reports.each do |new_sr|
+      scanner_name = new_sr.scan_info.scanner_name
+      old_sr = Xenuti::Report.find_scanner_report(old_report, scanner_name)
+      report.scanner_reports << Xenuti::ScannerReport.diff(old_sr, new_sr)
+    end
+    report.diffed = true
+    report.old_report = old_report
+    report
   end
 
   def self.find_scanner_report(report, scanner_name)
@@ -92,8 +107,8 @@ class Xenuti::Report < Hash
   def formatted_header_diff_info
     <<-EOF.unindent
     [diffed with]
-    start time: #{older_report.scan_info.start_time}
-    revision:   #{older_report.config.general.revision}
+    start time: #{old_report.scan_info.start_time}
+    revision:   #{old_report.scan_info.revision}
     EOF
   end
 
@@ -103,17 +118,6 @@ class Xenuti::Report < Hash
 
   def duration
     (scan_info.end_time - scan_info.start_time).round(2)
-  end
-
-  def diff!(older_report)
-    return unless older_report.is_a? Xenuti::Report
-    @diffed = true
-    self[:older_report] = older_report
-    scanner_reports.each do |sr|
-      scanner_name = sr.scan_info.scanner_name
-      old_sr = self.class.find_scanner_report(older_report, scanner_name)
-      sr.diff!(old_sr)
-    end
   end
 
   def diffed?

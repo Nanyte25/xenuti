@@ -9,6 +9,7 @@
 # in tests as a repo to be cloned, and since alpha is a Rails 3 app, we can run
 # analysis on it.
 require 'helpers/alpha_helper'
+require 'pp'
 
 describe Xenuti::Processor do
   let(:config) do
@@ -21,6 +22,36 @@ describe Xenuti::Processor do
     it 'should check out the code from repo to source directory' do
       processor.checkout_code
       expect(Dir.compare(ALPHA_REPO, config.general.source)).to be_true
+    end
+  end
+
+  context '#run' do
+    it 'should return full report when run in full report mode' do
+      processor.config.brakeman.enabled = true
+      report = processor.run
+      expect(report).to be_a Xenuti::Report
+      expect(report.diffed?).to be_false
+    end
+
+    it 'should return report with just new warnings when run in diff mode' do
+      processor.config.brakeman.enabled = true
+      processor.config.general.diff = true
+
+      # Uncomment secret token - this should cause Brakeman to report Session
+      # Setting warning
+      Dir.jumpd(ALPHA_REPO) do
+        %x(sed -i 's/#Alph/Alph/' config/initializers/secret_token.rb)
+        %x(git commit -a -m "Uncommenting session secret - will cause warning")
+      end
+
+      # Run once - older report will be reused from the above testcase
+      report = processor.run
+      expect(report).to be_a Xenuti::Report
+      expect(report.diffed?).to be_true
+      expect(report.scanner_reports[0].new_warnings.size).to be_eql(1)
+      expect(report.scanner_reports[0].new_warnings[0].warning_type).to \
+        be_eql('Session Setting')
+      expect(report.scanner_reports[0].fixed_warnings.size).to be_eql(0)
     end
   end
 end

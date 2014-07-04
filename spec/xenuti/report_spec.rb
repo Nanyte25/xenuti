@@ -24,8 +24,8 @@ describe Xenuti::Report do
   # It is fine though, since method access is tested on other places anyway
   # it_behaves_like 'hash with method access', Xenuti::Report.new
 
-  describe '::latest_report' do
-    it 'should return the latest report' do
+  describe '::prev_report' do
+    it 'should return the previous report' do
       Dir.mkdir tmp + '/reports'
       newer = '2014-05-30T15:38:04+02:00'
       older = '2014-05-30T15:37:04+02:00'
@@ -57,12 +57,18 @@ describe Xenuti::Report do
       end
 
       config = Xenuti::Config.from_hash(general: { tmpdir: tmp })
-      expect(Xenuti::Report.latest_report(config).name).to be_eql(:new)
+      expect(Xenuti::Report.prev_report(config).name).to be_eql(:new)
     end
 
     it 'should return nil when directory does not contain any report yet' do
       config = Xenuti::Config.from_hash(general: { tmpdir: FIXTURES })
-      expect(Xenuti::Report.latest_report(config)).to be_eql(nil)
+      expect(Xenuti::Report.prev_report(config)).to be_eql(nil)
+    end
+  end
+
+  describe '::diff' do
+    it 'should diff with older report correctly' do
+      # fail 'Implement this test'
     end
   end
 
@@ -81,7 +87,7 @@ describe Xenuti::Report do
       report[:config] = { general: { tmpdir: tmp } }
       report.scan_info.start_time = Time.now
       report.save(config)
-      latest = Xenuti::Report.latest_report(config)
+      latest = Xenuti::Report.prev_report(config)
       expect(latest).to be_eql(report)
     end
   end
@@ -91,16 +97,6 @@ describe Xenuti::Report do
       report.scan_info.start_time = Time.new(2008, 6, 21, 13, 30, 1.1)
       report.scan_info.end_time = Time.new(2008, 6, 21, 13, 30, 2.3)
       expect(report.duration).to be_eql(1.2)
-    end
-  end
-
-  describe '#diff!' do
-    it 'should diff with older report correctly' do
-      # fail 'Implement this test'
-    end
-
-    it 'should not do anything when diffed with nil' do
-
     end
   end
 end

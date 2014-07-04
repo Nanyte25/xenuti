@@ -14,6 +14,8 @@ class Xenuti::ReportSender
     /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\Z/.match address
   end
 
+  # rubocop:disable CyclomaticComplexity
+  # rubocop:disable MethodLength
   def initialize(config)
     self.config = config
     fail 'SMTP is disabled.' unless config.smtp.enabled
@@ -21,19 +23,35 @@ class Xenuti::ReportSender
       fail unless smtp.server.is_a? String
       fail unless smtp.port.is_a? Integer
       fail unless Xenuti::ReportSender.mail_address? smtp.from
-      fail unless Xenuti::ReportSender.mail_address? smtp.to
+      # smpt.to can be either mail address or Array of mail addresses
+      if smtp.to.is_a?(Array)
+        smtp.to.each do |e|
+          fail unless Xenuti::ReportSender.mail_address?(e)
+        end
+      else
+        fail unless Xenuti::ReportSender.mail_address?(smtp.to)
+      end
+    end
+  end
+  # rubocop:enable MethodLength
+  # rubocop:enable CyclomaticComplexity
+
+  def send(report_content)
+    options = { address: config.smtp.server, port: config.smtp.port }
+    config.smtp.to.is_a?(Array) ? to = config.smtp.to : to = [config.smtp.to]
+    to.each do |mail_to|
+      mail = compose_mail_to(mail_to, report_content)
+      mail.delivery_method :smtp, options
+      mail.deliver!
     end
   end
 
-  def send(report_content)
+  def compose_mail_to(mail_to, content)
     mail = Mail.new
-    mail.to(config.smtp.to)
+    mail.to(mail_to)
     mail.from(config.smtp.from)
     mail.subject("[Xenuti] Results for #{config.general.name}")
-    mail.body(report_content)
-
-    options = { address: config.smtp.server, port: config.smtp.port }
-    mail.delivery_method :smtp, options
-    mail.deliver!
+    mail.body(content)
+    mail
   end
 end

@@ -125,7 +125,7 @@ describe Xenuti::CodesakeDawn do
 
       output = Xenuti::CodesakeDawn.execute_scan(alpha_config)
       parsed = JSON.load(output.lines.to_a[1])
-      expect(parsed['vulnerabilities'].size).to be_eql(20)
+      expect(parsed['vulnerabilities'].size).to be >= 20
     end
   end
 

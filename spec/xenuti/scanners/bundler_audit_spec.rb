@@ -111,7 +111,8 @@ describe Xenuti::BundlerAudit do
       alpha_config.bundler_audit.enabled = true
 
       output = Xenuti::BundlerAudit.execute_scan(alpha_config)
-      expect(output.scan(/Name:.*?Solution:.*?\n/m).size).to be_eql(15)
+      # At this moment there are 16 vulnerabilities, might be more in future
+      expect(output.scan(/Name:.*?Solution:.*?\n/m).size).to be >= 16
     end
   end
 

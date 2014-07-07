@@ -115,7 +115,7 @@ describe Xenuti::Brakeman do
       report = Xenuti::Brakeman.parse_results(brakeman_output)
       expect(report).to be_a(Xenuti::ScannerReport)
       expect(report.warnings[1]).to be_a(Xenuti::Brakeman::Warning)
-      expect(report.warnings[1][:warning_code]).to be_eql(73)
+      expect(report.warnings[1][:warning_code]).to be >= 73
     end
   end
 end

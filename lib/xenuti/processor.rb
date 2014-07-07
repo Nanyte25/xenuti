@@ -53,7 +53,7 @@ class Xenuti::Processor
 
   def output_results(report)
     report = Xenuti::Report.diff(Xenuti::Report.prev_report(config), report) \
-      if config.general.diff
+      if config.general.diff && Xenuti::Report.prev_report(config)
     formatted = report.formatted(config)
     puts formatted unless config.general.quiet
     Xenuti::ReportSender.new(config).send(formatted) if config.smtp.enabled

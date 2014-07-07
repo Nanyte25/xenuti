@@ -9,7 +9,7 @@
 # in tests as a repo to be cloned, and since alpha is a Rails 3 app, we can run
 # analysis on it.
 require 'helpers/alpha_helper'
-require 'pp'
+require 'fileutils'
 
 describe Xenuti::Processor do
   let(:config) do
@@ -52,6 +52,18 @@ describe Xenuti::Processor do
       expect(report.scanner_reports[0].new_warnings[0].warning_type).to \
         be_eql('Session Setting')
       expect(report.scanner_reports[0].fixed_warnings.size).to be_eql(0)
+    end
+
+    it 'should fall back to full report mode when older report is not avail' do
+      processor.config.brakeman.enabled = true
+      processor.config.general.diff = true
+
+      # Remove old reports, so diff can`t work
+      FileUtils.rm_rf(ALPHA_WORKDIR + "/reports")
+      report = processor.run
+      expect(report).to be_a Xenuti::Report
+      expect(report.diffed?).to be_false
+      expect { report.scanner_reports[0].new_warnings }.to raise_error
     end
   end
 end

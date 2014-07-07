@@ -10,10 +10,43 @@ require 'ruby_util/hash_with_method_access'
 require 'ruby_util/hash_with_constraints'
 require 'ruby_util/string'
 
+# Xenuti::Config is a single point of truth during run. Other classes may add or
+# modify keys stored here during execution.
+#
+# It is a subclass of Hash, but also includes HashWithMethodAccess module. This
+# means entries can be accessed both by Hash-like syntax and as a methods. For
+# example, given config like
+#
+#     config = { :nested => { :key => :value } }
+#
+# we can retrieve value of key in two ways:
+#
+#     config[:nested][:key]
+#     config.nested.key
+#
+# This works by overloading #method_missing and returning value of the key if
+# key of such name exists. If the key of such name does not exists,
+# NoMethodError is thrown.
+#
+# Such method has two gotchas:
+# * New keys cannot be defined, hash syntax must be used
+# * Names of keys may collide with actual method names
+#
+# When possible, I use this method cause it just seems nice to me.
+#
+# Additionally, HashWithConstraints module is also included. This makes it
+# possible to specify a block with constraints passed to #constraints method,
+# and invoke check calling #check method. This works only if blocks passed raise
+# errors. If constraints should not be saved, but we need one-time-only check,
+# use #verify method.
 class Xenuti::Config < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
+  # This annotated config is returned by 'xenuti generate_config'. To avoid
+  # repetition and necessity to keep two places synchronized and up-to-date, it
+  # is parsed and used to define DEFAULT_CONFIG (see below), which is used to
+  # initialize values not specified explicitly.
   ANNOTATED_DEFAULT_CONFIG = <<-EOF.unindent
     ---
     general:

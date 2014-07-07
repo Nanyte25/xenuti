@@ -26,6 +26,10 @@ class Xenuti::Processor
     run_static_analysis(report)
 
     report.scan_info.end_time = Time.now
+    # It is important to first output results, only then save it. If we saved
+    # report first, Xenuti::Report.prev_report would return report we just saved
+    # as oldest one, which would make report diffed with itself in diff mode
+    # (see output_results method).
     result = output_results(report)
     report.save(config)
     result

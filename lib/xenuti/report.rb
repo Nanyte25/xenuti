@@ -8,6 +8,42 @@ require 'ruby_util/hash_with_method_access'
 require 'ruby_util/hash_with_constraints'
 require 'date'
 
+# Xenuti::Report is a subclass of Hash - this makes life easier for things like
+# formatting, serialization and calculating difference of two reports.
+#
+# General structure report is simple:
+#
+#  {
+#    :scan_info => {},
+#    :scanner_reports => []
+#  }
+#
+# :scan_info holds hash with general information about the scan, while
+# :scanner_reports points to an Array of Xenuti::ScannerReports. Moreover, it
+# also has one attribute :diffed, which indicates whether the report is result
+# of a diff between two other reports.
+#
+# Also includes HashWithMethodAccess, which makes it possible to access values
+# in two ways:
+#
+#     report[:scan_info][:version]
+#     report.scan_info.version
+#
+# This works by overloading #method_missing and returning value of the key if
+# key of such name exists. If the key of such name does not exists,
+# NoMethodError is thrown.
+#
+# Such method has two gotchas:
+# * New keys cannot be defined, hash syntax must be used
+# * Names of keys may collide with actual method names
+#
+# When possible, I use this method cause it just seems nice to me.
+#
+# Additionally, HashWithConstraints module is also included. This makes it
+# possible to specify a block with constraints passed to #constraints method,
+# and invoke check calling #check method. This works only if blocks passed raise
+# errors. If constraints should not be saved, but we need one-time-only check,
+# use #verify method.
 class Xenuti::Report < Hash
   include HashWithMethodAccess
   include HashWithConstraints
@@ -16,11 +52,14 @@ class Xenuti::Report < Hash
 
   REPORT_NAME = 'report.yml'
 
-  # TODO: figure out SafeYAML to call this with safe: true
+  # Load report saved by #save method.
   def self.load(filename)
+    # TODO: figure out SafeYAML to call this with safe: true
     YAML.load(File.new(filename).read, safe: false)
   end
 
+  # Returns the oldest report that can be found in Xenuti`s workdir, as defined
+  # in configuration.
   def self.prev_report(config)
     reportfiles = Dir.glob config.general.workdir + '/reports/**/' + REPORT_NAME
     latest_time = Time.at(0)
@@ -33,6 +72,13 @@ class Xenuti::Report < Hash
     latest
   end
 
+  # Returns new report, which is a result of calculating difference of two other
+  # reports. Diffed report contains :scan_info of newer report, but also some
+  # info about older report (such as revision, on which it ran).
+  #
+  # Most importantly, all scanner reports also contain :new_warnings and
+  # :fixed_warnings keys, which point to Array of Xenuti::Warnings (see
+  # Xenuti::ScannerReport::diff).
   def self.diff(old_report, new_report)
     report = Xenuti::Report.new
     report.scan_info = new_report.scan_info
@@ -46,6 +92,7 @@ class Xenuti::Report < Hash
     report
   end
 
+  # Finds scanners report corresponding to the scanner_name.
   def self.find_scanner_report(report, scanner_name)
     report.scanner_reports.select do |r|
       r.scan_info.scanner_name == scanner_name
@@ -58,6 +105,7 @@ class Xenuti::Report < Hash
     @diffed = false
   end
 
+  # Retrieve again with Xenuti::Report.load(filename).
   def save(config)
     FileUtils.mkdir_p reports_dir(config) unless Dir.exist? reports_dir(config)
     filename = reports_dir(config) + '/' + REPORT_NAME
@@ -66,6 +114,7 @@ class Xenuti::Report < Hash
     end
   end
 
+  # Returns plaintext pretty-formatted version of a report.
   def formatted(config)
     report = formatted_header(config)
     scanner_reports.each do |scanner_report|
@@ -121,6 +170,9 @@ class Xenuti::Report < Hash
   end
 
   def diffed?
+    # TODO: get rid of unnecessary attribute. Report is diffed when it contains
+    # reference to old_report and all scanner reports are diffed. Also update
+    # doc text above.
     @diffed == true
   end
 

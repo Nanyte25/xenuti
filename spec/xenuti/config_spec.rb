@@ -19,7 +19,8 @@ describe Xenuti::Config do
 
   describe '#initialize' do
     it 'should get default values merged in' do
-      expect(Xenuti::Config.new).to be_eql(Xenuti::Config::DEFAULT_CONFIG)
+      expect(Xenuti::Config.new).to be_eql \
+        Xenuti::Config::DEFAULT_CONFIG.deep_symbolize_keys
     end
   end
 

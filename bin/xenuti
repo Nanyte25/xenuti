@@ -17,3 +17,18 @@ command :run do |c|
     processor.run
   end
 end
+
+command :generate_config do |c|
+  c.syntax = 'xenuti generate-config [options]'
+  c.description = 'Generate example config file with annotations.'
+  c.option '--file STRING', String, 'Write default configuration to the file.'
+  c.action do |args, options|
+    if options.file
+      File.open(options.file, 'w+') do |f|
+        f.write(Xenuti::Config::ANNOTATED_DEFAULT_CONFIG)
+      end
+    else
+      puts Xenuti::Config::ANNOTATED_DEFAULT_CONFIG
+    end
+  end
+end

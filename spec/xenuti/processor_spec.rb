@@ -59,7 +59,7 @@ describe Xenuti::Processor do
       processor.config.general.diff = true
 
       # Remove old reports, so diff can`t work
-      FileUtils.rm_rf(ALPHA_WORKDIR + "/reports")
+      FileUtils.rm_rf(ALPHA_WORKDIR + '/reports')
       report = processor.run
       expect(report).to be_a Xenuti::Report
       expect(report.diffed?).to be_false

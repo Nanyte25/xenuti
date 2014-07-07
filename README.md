@@ -9,18 +9,18 @@ Attention: this is Work In Progress !
 
 1. Check out the source of Xenuti and run
 
-	bundle install
+		bundle install
 
    to install dependencies of Xenuti.
 
 2. Generate example configuration file and edit it to configure Xenuti for your 
    application:
 
-	bin/xenuti generate_config --file <name of config file>
+		bin/xenuti generate_config --file <name of config file>
 
 3. Execute Xenuti scan:
 
-	bin/xenuti run <name of config file>
+		bin/xenuti run <name of config file>
 
 
 ## Contributing

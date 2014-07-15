@@ -56,6 +56,7 @@ class Xenuti::Config < Hash
                           # sources.. Don't change in diff mode between runs.
       relative_path: ''   # Relative path to web application within repository
       quiet: false        # Suppress output
+      loglevel: warn      # One of: fatal, error, warn, info, debug
       diff: false         # Diff mode - include only new warnings in report
     smtp:
       enabled: false      # Enable to send report by mail

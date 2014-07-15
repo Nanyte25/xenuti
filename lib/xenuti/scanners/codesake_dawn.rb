@@ -45,7 +45,10 @@ class Xenuti::CodesakeDawn
     gemfile_lock_path = config.general.app_dir + '/Gemfile.lock'
     fail 'Cannot find Gemfile.lock' unless File.exist?(gemfile_lock_path)
 
-    %x(dawn -j #{config.general.app_dir})
+    $log.info 'CodesakeDawn: starting scan'
+    output = %x(dawn -j #{config.general.app_dir})
+    $log.info 'CodesakeDawn: scan finished'
+    output
   end
 
   def self.parse_results(json_output)

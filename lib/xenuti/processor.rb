@@ -5,6 +5,8 @@
 # MIT license.
 
 require 'xenuti/repository'
+require 'logger'
+require 'ruby_util/multi_write_io'
 
 class Xenuti::Processor
   attr_accessor :config
@@ -12,8 +14,30 @@ class Xenuti::Processor
   STATIC_ANALYZERS = [
     Xenuti::Brakeman, Xenuti::CodesakeDawn, Xenuti::BundlerAudit]
 
+  LOG_LEVEL = {
+    'fatal' => Logger::FATAL, 'error' => Logger::ERROR,
+    'warn' => Logger::WARN, 'info' => Logger::INFO, 'debug' => Logger::DEBUG }
+
   def initialize(config)
     @config = config
+    unless Dir.exist? Xenuti::Report.reports_dir(config)
+      FileUtils.mkdir_p Xenuti::Report.reports_dir(config)
+    end
+    initialize_log
+  end
+
+  def initialize_log
+    unless $log
+      logfile_path = File.join(Xenuti::Report.reports_dir(config), 'xenuti.log')
+      targets = [File.new(logfile_path, 'w+')]
+      targets << STDOUT unless config.general.quiet
+      $log = ::Logger.new(MultiWriteIO.new(*targets))
+      $log.formatter = proc do |severity, datetime, _progname, msg|
+        "[#{datetime}] #{severity}  #{msg}\n"
+      end
+      $log.level = LOG_LEVEL[config.general.loglevel]
+      at_exit { $log.close }
+    end
   end
 
   def run

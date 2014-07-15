@@ -42,7 +42,10 @@ class Xenuti::Brakeman
 
   def self.execute_scan(config)
     fail 'Brakeman is disabled' unless config.brakeman.enabled
-    %x(brakeman -q -f json #{config.general.app_dir})
+    $log.info 'Brakeman: starting scan'
+    output = %x(brakeman -q -f json #{config.general.app_dir})
+    $log.info 'Brakeman: scan finished'
+    output
   end
 
   def self.parse_results(json_output)

@@ -14,9 +14,9 @@ describe Xenuti::Report do
   let(:report) { Xenuti::Report.new }
   let(:tmp) do
     tmp = Dir.mktmpdir
-    at_exit do
-      FileUtils.rm_rf(tmp)
-    end
+    # at_exit do
+    #   FileUtils.rm_rf(tmp)
+    # end
     tmp
   end
 
@@ -68,23 +68,27 @@ describe Xenuti::Report do
 
   describe '::diff' do
     it 'should diff with older report correctly' do
+      # TODO
       # fail 'Implement this test'
     end
   end
 
-  describe '#reports_dir' do
+  describe '::reports_dir' do
     it 'output should be the same across multiple calls' do
       config = Xenuti::Config.from_hash(general: { workdir: tmp })
-      reports_dir1 = report.reports_dir(config)
-      reports_dir2 = report.reports_dir(config)
+      reports_dir1 = Xenuti::Report.reports_dir(config)
+      sleep 1
+      reports_dir2 = Xenuti::Report.reports_dir(config)
       expect(reports_dir1).to be_eql(reports_dir2)
     end
   end
 
   describe '#save and ::load' do
     it 'report should be identical after saving and loading again' do
-      config = Xenuti::Config.from_hash(general: { workdir: tmp })
-      report[:config] = { general: { workdir: tmp } }
+      reports_dir = Xenuti::Report.reports_dir(Xenuti::Config.from_hash({}))
+      workdir = reports_dir.split('/').take(3).join('/')
+      config = Xenuti::Config.from_hash(general: { workdir: workdir })
+      report[:config] = config
       report.scan_info.start_time = Time.now
       report.save(config)
       latest = Xenuti::Report.prev_report(config)

@@ -47,7 +47,7 @@ File.open(ALPHA_CONFIG, 'w+') do |file|
   EOF
 end
 
-at_exit do
-  FileUtils.rm_rf(ALPHA_REPO)
-  FileUtils.rm_rf(ALPHA_WORKDIR)
-end
+# at_exit do
+#   FileUtils.rm_rf(ALPHA_REPO)
+#   FileUtils.rm_rf(ALPHA_WORKDIR)
+# end

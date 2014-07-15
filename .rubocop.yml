@@ -13,10 +13,22 @@ Documentation:
 ClassAndModuleChildren:
   Enabled: false
 
+GlobalVars:
+  Enabled: false
+
 LineLength:
   Max: 80
   Exclude: 
     - 'bin/xenuti'
+
+ClassLength:
+  Max: 150
+
+MethodLength:
+  Max: 12
+
+ClassVars:
+  Enabled: false
 
 SpecialGlobalVars:
   Enabled: false

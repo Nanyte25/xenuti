@@ -45,7 +45,10 @@ class Xenuti::BundlerAudit
 
     update_database
     Dir.jumpd(config.general.app_dir) do
-      return %x(bundle-audit)
+      $log.info 'BundlerAudit: starting scan'
+      output = %x(bundle-audit)
+      $log.info 'BundlerAudit: scan finished'
+      return output
     end
   end
 
@@ -68,6 +71,7 @@ class Xenuti::BundlerAudit
   # rubocop:enable MethodLength
 
   def self.update_database
+    $log.info 'BundlerAudit: updating database'
     %x(bundle-audit update &>/dev/null)
     fail 'Failed to update BundlerAudit database' if $?.exitstatus != 0
   end

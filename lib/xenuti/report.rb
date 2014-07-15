@@ -61,7 +61,8 @@ class Xenuti::Report < Hash
   # Returns the oldest report that can be found in Xenuti`s workdir, as defined
   # in configuration.
   def self.prev_report(config)
-    reportfiles = Dir.glob config.general.workdir + '/reports/**/' + REPORT_NAME
+    search_path = File.join(config.general.workdir, '/reports/**/', REPORT_NAME)
+    reportfiles = Dir.glob search_path
     latest_time = Time.at(0)
     latest = nil
     reportfiles.each do |reportfile|
@@ -99,6 +100,11 @@ class Xenuti::Report < Hash
     end.first
   end
 
+  def self.reports_dir(config)
+    timestamp = Time.now.to_datetime.rfc3339
+    @@dir ||= File.join(config.general.workdir, 'reports', timestamp)
+  end
+
   def initialize
     self[:scan_info] = { version: Xenuti::Version }
     self[:scanner_reports] = []
@@ -107,8 +113,10 @@ class Xenuti::Report < Hash
 
   # Retrieve again with Xenuti::Report.load(filename).
   def save(config)
-    FileUtils.mkdir_p reports_dir(config) unless Dir.exist? reports_dir(config)
-    filename = reports_dir(config) + '/' + REPORT_NAME
+    unless Dir.exist? Xenuti::Report.reports_dir(config)
+      FileUtils.mkdir_p Xenuti::Report.reports_dir(config)
+    end
+    filename = File.join(self.class.reports_dir(config), REPORT_NAME)
     File.open(filename, 'w+') do |file|
       file.write(YAML.dump(self))
     end
@@ -174,9 +182,5 @@ class Xenuti::Report < Hash
     # reference to old_report and all scanner reports are diffed. Also update
     # doc text above.
     @diffed == true
-  end
-
-  def reports_dir(config)
-    @dir ||= config.general.workdir + '/reports/' + Time.now.to_datetime.rfc3339
   end
 end

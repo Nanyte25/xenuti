@@ -33,7 +33,7 @@ class Xenuti::Processor
       targets << STDOUT unless config.general.quiet
       $log = ::Logger.new(MultiWriteIO.new(*targets))
       $log.formatter = proc do |severity, datetime, _progname, msg|
-        "[#{datetime}] #{severity}  #{msg}\n"
+        "[#{datetime.strftime('%Y-%m-%d %I:%M.%L')}] #{severity}  #{msg}\n"
       end
       $log.level = LOG_LEVEL[config.general.loglevel]
       at_exit { $log.close }
@@ -44,9 +44,7 @@ class Xenuti::Processor
     report = Xenuti::Report.new
     report.scan_info.start_time = Time.now
 
-    check_requirements
-    checkout_code
-    report.scan_info.revision = config.general.revision
+    checkout_code(report)
     run_static_analysis(report)
 
     report.scan_info.end_time = Time.now
@@ -65,13 +63,14 @@ class Xenuti::Processor
     end
   end
 
-  def checkout_code
+  def checkout_code(report)
     Xenuti::Repository.fetch_source(config, config.general.workdir + '/source')
+    report.scan_info.revision = config.general.revision
   end
 
   def run_static_analysis(report)
     STATIC_ANALYZERS.each do |klass|
-      if config[klass.name][:enabled]
+      if @config[klass.name][:enabled]
         scanner = klass.new(config)
         scanner.run_scan
         report.scanner_reports << scanner.scanner_report

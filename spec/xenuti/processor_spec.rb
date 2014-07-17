@@ -20,7 +20,7 @@ describe Xenuti::Processor do
 
   context '#checkout_code' do
     it 'should check out the code from repo to source directory' do
-      processor.checkout_code
+      processor.checkout_code(Xenuti::Report.new)
       expect(Dir.compare(ALPHA_REPO, config.general.source)).to be_true
     end
   end

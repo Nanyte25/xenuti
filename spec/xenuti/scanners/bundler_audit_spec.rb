@@ -8,7 +8,11 @@ require 'spec_helper'
 require 'xenuti/scanners/scanner_shared'
 
 describe Xenuti::BundlerAudit do
-  let(:config) { Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read) }
+  let(:config) do
+    config = Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read)
+    config.general.app_dir = ALPHA_REPO
+    config
+  end
   let(:alpha_config) { Xenuti::Config.from_yaml(File.new(ALPHA_CONFIG).read) }
   let(:bundler_audit_output) { File.new(BUNDLER_AUDIT_OUTPUT).read }
   let(:warning_hash) do
@@ -78,11 +82,11 @@ describe Xenuti::BundlerAudit do
   end
 
   describe '::check_config' do
-    it 'should fail if source is not present in config' do
-      config.general.source = nil
+    it 'should fail if app_dir is not present in config' do
+      config.general.app_dir = nil
       expect do
         Xenuti::BundlerAudit.check_config(config)
-      end.to raise_error RuntimeError
+      end.to raise_error TypeError
       config.general = nil
       expect do
         Xenuti::BundlerAudit.check_config(config)

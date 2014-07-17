@@ -21,11 +21,14 @@ class Xenuti::Repository
     end
 
     def clone(source, destination)
+      $log.info "Cloning #{source} to #{destination} ..."
       %x(git clone #{source} #{destination} 2>&1)
       fail 'Git clone failed' if $?.exitstatus != 0
+      $log.info '... cloning done.'
     end
 
     def update(git_repo)
+      $log.info "Updating git repository #{git_repo} ..."
       cwd = Dir.pwd
       begin
         Dir.chdir git_repo
@@ -34,6 +37,7 @@ class Xenuti::Repository
       ensure
         Dir.chdir cwd
       end
+      $log.info '... update done.'
     end
 
     def git_repo?(dir)

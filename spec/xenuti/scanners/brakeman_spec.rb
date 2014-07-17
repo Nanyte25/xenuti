@@ -9,7 +9,11 @@ require 'xenuti/scanners/scanner_shared'
 require 'helpers/alpha_helper'
 
 describe Xenuti::Brakeman do
-  let(:config) { Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read) }
+  let(:config) do
+    config = Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read)
+    config.general.app_dir = ALPHA_REPO
+    config
+  end
   let(:alpha_config) { Xenuti::Config.from_yaml(File.new(ALPHA_CONFIG).read) }
   let(:brakeman_output) { File.new(BRAKEMAN_OUTPUT).read }
   let(:warning_hash) do
@@ -73,10 +77,10 @@ describe Xenuti::Brakeman do
 
   describe '::check_config' do
     it 'should fail if source is not present in config' do
-      config.general.source = nil
+      config.general.app_dir = nil
       expect do
         Xenuti::Brakeman.check_config(config)
-      end.to raise_error RuntimeError
+      end.to raise_error TypeError
       config.general = nil
       expect do
         Xenuti::Brakeman.check_config(config)

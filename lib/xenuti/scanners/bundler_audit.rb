@@ -17,9 +17,15 @@ class Xenuti::BundlerAudit
     end
   end
 
-  def self.check_requirements(_config)
+  # Check requirements for running this scanner - throws RuntimeError if any of
+  # the requirements are not met. Returns true when requirements are met.
+  def self.check_requirements(config)
     %x(whereis bundle-audit | grep '/')
-    fail 'BundlerAudit not installed.' if $?.exitstatus != 0
+    xfail 'BundlerAudit: could not find executable.' if $?.exitstatus != 0
+    gemfile = config.general.app_dir + '/Gemfile.lock'
+    xfail 'BundlerAudit: missing Gemfile.lock' unless File.exist?(gemfile)
+
+    $log.info 'BundlerAudit: check_requirements passed'
     true
   end
 
@@ -33,15 +39,16 @@ class Xenuti::BundlerAudit
 
   def self.check_config(config)
     config.verify do
-      fail unless general.source.is_a? String
+      unless Dir.exist? config.general.app_dir
+        xfail "Directory #{config.general.appdir} does not exist"
+      end
     end
+    $log.info 'BundlerAudit: configuration check passed'
     true
   end
 
   def self.execute_scan(config)
-    fail 'BundlerAudit is disabled' unless config.bundler_audit.enabled
-    gemfile_lock_path = config.general.app_dir + '/Gemfile.lock'
-    fail 'Cannot find Gemfile.lock' unless File.exist?(gemfile_lock_path)
+    xfail 'BundlerAudit is disabled' unless config.bundler_audit.enabled
 
     update_database
     Dir.jumpd(config.general.app_dir) do
@@ -73,6 +80,6 @@ class Xenuti::BundlerAudit
   def self.update_database
     $log.info 'BundlerAudit: updating database'
     %x(bundle-audit update &>/dev/null)
-    fail 'Failed to update BundlerAudit database' if $?.exitstatus != 0
+    xfail 'BundlerAudit: Failed to update database' if $?.exitstatus != 0
   end
 end

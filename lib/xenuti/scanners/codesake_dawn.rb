@@ -19,9 +19,13 @@ class Xenuti::CodesakeDawn
 
   # Check requirements for running this scanner - throws RuntimeError if any of
   # the requirements are not met. Returns true when requirements are met.
-  def self.check_requirements(_config)
+  def self.check_requirements(config)
     %x(whereis dawn | grep '/')
-    fail 'CodesakeDawn not installed.' if $?.exitstatus != 0
+    xfail 'CodesakeDawn: could not find executable.' if $?.exitstatus != 0
+    gemfile = config.general.app_dir + '/Gemfile.lock'
+    xfail 'CodesakeDawn: missing Gemfile.lock' unless File.exist?(gemfile)
+
+    $log.info 'CodesakeDawn: check_requirements passed'
     true
   end
 
@@ -35,15 +39,16 @@ class Xenuti::CodesakeDawn
 
   def self.check_config(config)
     config.verify do
-      fail unless general.source.is_a? String
+      unless Dir.exist? config.general.app_dir
+        xfail "Directory #{config.general.appdir} does not exist"
+      end
     end
+    $log.info 'CodesakeDawn: configuration check passed'
     true
   end
 
   def self.execute_scan(config)
-    fail 'CodesakeDawn is disabled' unless config.codesake_dawn.enabled
-    gemfile_lock_path = config.general.app_dir + '/Gemfile.lock'
-    fail 'Cannot find Gemfile.lock' unless File.exist?(gemfile_lock_path)
+    xfail 'CodesakeDawn is disabled' unless config.codesake_dawn.enabled
 
     $log.info 'CodesakeDawn: starting scan'
     output = %x(dawn -j #{config.general.app_dir})

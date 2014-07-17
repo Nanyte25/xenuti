@@ -9,7 +9,11 @@ require 'xenuti/scanners/scanner_shared'
 require 'helpers/alpha_helper'
 
 describe Xenuti::CodesakeDawn do
-  let(:config) { Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read) }
+  let(:config) do
+    config = Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read)
+    config.general.app_dir = ALPHA_REPO
+    config
+  end
   let(:alpha_config) { Xenuti::Config.from_yaml(File.new(ALPHA_CONFIG).read) }
   let(:codesake_dawn) { Xenuti::CodesakeDawn.new(config) }
   let(:alpha_codesake_dawn) { Xenuti::CodesakeDawn.new(alpha_config) }
@@ -92,10 +96,10 @@ describe Xenuti::CodesakeDawn do
 
   describe 'check_config' do
     it 'should fail if source is not present in config' do
-      config.general.source = nil
+      config.general.app_dir = nil
       expect do
         Xenuti::CodesakeDawn.check_config(config)
-      end.to raise_error RuntimeError
+      end.to raise_error TypeError
       config.general = nil
       expect do
         Xenuti::CodesakeDawn.check_config(config)

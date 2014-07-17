@@ -21,7 +21,9 @@ class Xenuti::Brakeman
   # the requirements are not met. Returns true when requirements are met.
   def self.check_requirements(_config)
     %x(whereis brakeman | grep '/')
-    fail 'Brakeman not installed.' if $?.exitstatus != 0
+    xfail 'Brakeman: could not find executable' if $?.exitstatus != 0
+
+    $log.info 'Brakeman: check_requirements passed'
     true
   end
 
@@ -35,13 +37,16 @@ class Xenuti::Brakeman
 
   def self.check_config(config)
     config.verify do
-      fail unless general.source.is_a? String
+      unless Dir.exist? config.general.app_dir
+        xfail "Directory #{config.general.appdir} does not exist"
+      end
     end
+    $log.info 'Brakeman: configuration check passed'
     true
   end
 
   def self.execute_scan(config)
-    fail 'Brakeman is disabled' unless config.brakeman.enabled
+    xfail 'Brakeman is disabled' unless config.brakeman.enabled
     $log.info 'Brakeman: starting scan'
     output = %x(brakeman -q -f json #{config.general.app_dir})
     $log.info 'Brakeman: scan finished'

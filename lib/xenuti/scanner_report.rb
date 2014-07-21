@@ -44,7 +44,11 @@ class Xenuti::ScannerReport < Hash
     scanner:  #{scan_info.scanner_name}
     version:  #{scan_info.scanner_version}
     duration: #{scan_info.duration} s
+
+    total warnings: #{warnings.size}
     EOF
+    header << "new warnings:   #{new_warnings.size}\n" if diffed?
+    header << "fixed warnings: #{fixed_warnings.size}\n" if diffed?
     header << formatted_header_exception if scan_info[:exception]
     header << formatted_header_end_banner
   end

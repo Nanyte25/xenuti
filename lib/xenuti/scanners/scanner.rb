@@ -53,7 +53,7 @@ module Xenuti::Scanner
       $log.info("Creating report directory #{report_dir}")
       FileUtils.mkdir_p report_dir
     end
-    filename = File.join(report_dir, self.class.name + "_output")
+    filename = File.join(report_dir, self.class.name + '_output')
     $log.info("#{self.class.name}: writing scan output to #{filename}")
     File.open(filename, 'w+') do |file|
       file.write(@output)

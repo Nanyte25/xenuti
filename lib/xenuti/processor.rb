@@ -23,9 +23,7 @@ class Xenuti::Processor
   def initialize(config)
     @config = config
     reports_dir = Xenuti::Report.reports_dir(config)
-    unless Dir.exist? reports_dir
-      FileUtils.mkdir_p reports_dir
-    end
+    FileUtils.mkdir_p reports_dir unless Dir.exist?(reports_dir)
     initialize_log
   end
 

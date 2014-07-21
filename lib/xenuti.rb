@@ -4,6 +4,11 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
+def xfail(message)
+  $log.error message
+  fail message
+end
+
 module Xenuti
 end
 
@@ -19,3 +24,4 @@ require 'xenuti/scanners/brakeman'
 require 'xenuti/scanners/codesake_dawn'
 require 'xenuti/scanners/bundler_audit'
 require 'xenuti/processor'
+require 'xenuti/deployer'

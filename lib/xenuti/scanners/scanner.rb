@@ -46,4 +46,17 @@ module Xenuti::Scanner
     @scanner_report
   end
   # rubocop:enable MethodLength
+
+  def save_output
+    report_dir = Xenuti::Report.reports_dir(@config)
+    unless Dir.exist? report_dir
+      $log.info("Creating report directory #{report_dir}")
+      FileUtils.mkdir_p report_dir
+    end
+    filename = File.join(report_dir, self.class.name + "_output")
+    $log.info("#{self.class.name}: writing scan output to #{filename}")
+    File.open(filename, 'w+') do |file|
+      file.write(@output)
+    end
+  end
 end

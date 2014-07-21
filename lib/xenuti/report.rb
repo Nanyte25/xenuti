@@ -113,10 +113,13 @@ class Xenuti::Report < Hash
 
   # Retrieve again with Xenuti::Report.load(filename).
   def save(config)
-    unless Dir.exist? Xenuti::Report.reports_dir(config)
-      FileUtils.mkdir_p Xenuti::Report.reports_dir(config)
+    reports_dir = Xenuti::Report.reports_dir(config)
+    unless Dir.exist? reports_dir
+      $log.info("Creating report directory #{reports_dir}")
+      FileUtils.mkdir_p reports_dir
     end
-    filename = File.join(self.class.reports_dir(config), REPORT_NAME)
+    filename = File.join(reports_dir, REPORT_NAME)
+    $log.info("Saving Xenuti report to #{filename}")
     File.open(filename, 'w+') do |file|
       file.write(YAML.dump(self))
     end

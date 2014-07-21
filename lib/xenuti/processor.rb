@@ -14,14 +14,17 @@ class Xenuti::Processor
   STATIC_ANALYZERS = [
     Xenuti::Brakeman, Xenuti::CodesakeDawn, Xenuti::BundlerAudit]
 
+  ACTIVE_SCANNERS = []
+
   LOG_LEVEL = {
     'fatal' => Logger::FATAL, 'error' => Logger::ERROR,
     'warn' => Logger::WARN, 'info' => Logger::INFO, 'debug' => Logger::DEBUG }
 
   def initialize(config)
     @config = config
-    unless Dir.exist? Xenuti::Report.reports_dir(config)
-      FileUtils.mkdir_p Xenuti::Report.reports_dir(config)
+    reports_dir = Xenuti::Report.reports_dir(config)
+    unless Dir.exist? reports_dir
+      FileUtils.mkdir_p reports_dir
     end
     initialize_log
   end
@@ -46,6 +49,7 @@ class Xenuti::Processor
 
     checkout_code(report)
     run_static_analysis(report)
+    run_active_scanners(report)
 
     report.scan_info.end_time = Time.now
     # It is important to first output results, only then save it. If we saved
@@ -53,7 +57,7 @@ class Xenuti::Processor
     # as oldest one, which would make report diffed with itself in diff mode
     # (see output_results method).
     result = output_results(report)
-    report.save(config)
+    report.save(@config)
     result
   end
 
@@ -74,16 +78,30 @@ class Xenuti::Processor
         scanner = klass.new(config)
         scanner.run_scan
         report.scanner_reports << scanner.scanner_report
+        scanner.save_output
+      end
+    end
+  end
+
+  def run_active_scanners(report)
+    Xenuti::Deployer.check_requirements(@config)
+    ACTIVE_SCANNERS.each do |klass|
+      if @config[klass.name][:enabled]
+        scanner = klass.new(config)
+        xfail 'Failed to deploy' unless Xenuti::Deployer.deploy(config)
+        scanner.run_scan
+        report.scanner_reports << scanner.scanner_report
+        xfail 'Failed to cleanup' unless Xenuti::Deployer.cleanup(config)
       end
     end
   end
 
   def output_results(report)
-    report = Xenuti::Report.diff(Xenuti::Report.prev_report(config), report) \
-      if config.general.diff && Xenuti::Report.prev_report(config)
+    report = Xenuti::Report.diff(Xenuti::Report.prev_report(@config), report) \
+      if @config.general.diff && Xenuti::Report.prev_report(@config)
     formatted = report.formatted(config)
-    puts formatted unless config.general.quiet
-    Xenuti::ReportSender.new(config).send(formatted) if config.smtp.enabled
+    puts formatted unless @config.general.quiet
+    Xenuti::ReportSender.new(config).send(formatted) if @config.smtp.enabled
     report
   end
 end

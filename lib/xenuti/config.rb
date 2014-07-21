@@ -58,6 +58,12 @@ class Xenuti::Config < Hash
       quiet: false        # Suppress output
       loglevel: warn      # One of: fatal, error, warn, info, debug
       diff: false         # Diff mode - include only new warnings in report
+    active_scan:
+      deploy_script:      # Path to deploy script
+      cleanup_script:     # Path to cleanup script
+      deploy_variables:   # String of comma-separated environment variables
+      cleanup_variables:  # String of comma-separated environment variables
+      url:                # URL where application will be deployed
     smtp:
       enabled: false      # Enable to send report by mail
       from:               # From mail address

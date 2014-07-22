@@ -71,12 +71,13 @@ class Xenuti::Processor
   end
 
   def run_static_analysis(report)
-    STATIC_ANALYZERS.each do |klass|
-      if @config[klass.name][:enabled]
+    # Run only enabled analyzers
+    STATIC_ANALYZERS.select { |a| @config[a.name][:enabled] }.each do |klass|
+      @config.general.relative_path.each do |relpath|
         scanner = klass.new(config)
-        scanner.run_scan
-        report.scanner_reports << scanner.scanner_report
-        scanner.save_output
+        scanner.run_scan(File.join(config.general.source, relpath))
+        report.scanner_reports << scanner.scanner_report(relpath)
+        scanner.save_output(relpath)
       end
     end
   end

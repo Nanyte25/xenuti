@@ -96,7 +96,7 @@ describe Xenuti::CodesakeDawn do
 
   describe 'check_config' do
     it 'should fail if source is not present in config' do
-      config.general.app_dir = nil
+      config.general.source = nil
       expect do
         Xenuti::CodesakeDawn.check_config(config)
       end.to raise_error TypeError
@@ -107,7 +107,8 @@ describe Xenuti::CodesakeDawn do
     end
 
     it 'should pass when source is present in config' do
-      expect(Xenuti::CodesakeDawn.check_config(config)).to be_true
+      alpha_config.general.source = ALPHA_REPO
+      expect(Xenuti::CodesakeDawn.check_config(alpha_config)).to be_true
     end
   end
 
@@ -115,19 +116,16 @@ describe Xenuti::CodesakeDawn do
     it 'throws exception when called disabled' do
       config.codesake_dawn.enabled = false
       expect do
-        Xenuti::CodesakeDawn.execute_scan(config)
+        Xenuti::CodesakeDawn.execute_scan(config, '/some/path')
       end.to raise_error(RuntimeError)
     end
 
     it 'runs scan and captures CodesakeDawn output' do
-      # Small hack - I don`t want to clone the repo to get source, so just
-      # hardcode it like this
-      alpha_config.general.app_dir = alpha_config.general.repo
 
       # By default alpha_config has all scanners disabled.
       alpha_config.codesake_dawn.enabled = true
 
-      output = Xenuti::CodesakeDawn.execute_scan(alpha_config)
+      output = Xenuti::CodesakeDawn.execute_scan(alpha_config, ALPHA_REPO)
       parsed = JSON.load(output.lines.to_a[1])
       expect(parsed['vulnerabilities'].size).to be >= 20
     end

@@ -7,7 +7,7 @@
 require 'ruby_util/dir'
 
 class Xenuti::BundlerAudit
-  include Xenuti::Scanner
+  include Xenuti::StaticAnalyzer
 
   class Warning < Xenuti::Warning
     CRITICALITY = %w(High Medium Low Unknown)
@@ -22,8 +22,10 @@ class Xenuti::BundlerAudit
   def self.check_requirements(config)
     %x(whereis bundle-audit | grep '/')
     xfail 'BundlerAudit: could not find executable.' if $?.exitstatus != 0
-    gemfile = config.general.app_dir + '/Gemfile.lock'
-    xfail 'BundlerAudit: missing Gemfile.lock' unless File.exist?(gemfile)
+    config.general.relative_path.each do |relpath|
+      gemfile = File.join(config.general.source, relpath, 'Gemfile.lock')
+      xfail 'BundlerAudit: missing Gemfile.lock' unless File.exist?(gemfile)
+    end
 
     $log.info 'BundlerAudit: check_requirements passed'
     true
@@ -39,20 +41,21 @@ class Xenuti::BundlerAudit
 
   def self.check_config(config)
     config.verify do
-      unless Dir.exist? config.general.app_dir
-        xfail "Directory #{config.general.appdir} does not exist"
+      config.general.relative_path.each do |relpath|
+        app_dir = File.join(config.general.source, relpath)
+        xfail "Directory #{app_dir} does not exist" unless Dir.exist? app_dir
       end
     end
     $log.info 'BundlerAudit: configuration check passed'
     true
   end
 
-  def self.execute_scan(config)
+  def self.execute_scan(config, app_dir)
     xfail 'BundlerAudit is disabled' unless config.bundler_audit.enabled
 
     update_database
-    Dir.jumpd(config.general.app_dir) do
-      $log.info 'BundlerAudit: starting scan'
+    Dir.jumpd(app_dir) do
+      $log.info "BundlerAudit: starting scan of #{app_dir}"
       output = %x(bundle-audit)
       $log.info 'BundlerAudit: scan finished'
       return output

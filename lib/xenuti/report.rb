@@ -84,8 +84,9 @@ class Xenuti::Report < Hash
     report = Xenuti::Report.new
     report.scan_info = new_report.scan_info
     new_report.scanner_reports.each do |new_sr|
-      scanner_name = new_sr.scan_info.scanner_name
-      old_sr = Xenuti::Report.find_scanner_report(old_report, scanner_name)
+      scanner = new_sr.scan_info.scanner_name
+      relpath = new_sr.scan_info.relpath
+      old_sr = Xenuti::Report.find_scanner_report(old_report, scanner, relpath)
       report.scanner_reports << Xenuti::ScannerReport.diff(old_sr, new_sr)
     end
     report.diffed = true
@@ -94,9 +95,10 @@ class Xenuti::Report < Hash
   end
 
   # Finds scanners report corresponding to the scanner_name.
-  def self.find_scanner_report(report, scanner_name)
+  def self.find_scanner_report(report, scanner_name, relpath)
     report.scanner_reports.select do |r|
-      r.scan_info.scanner_name == scanner_name
+      r.scan_info.scanner_name == scanner_name &&
+      r.scan_info.relpath == relpath
     end.first
   end
 

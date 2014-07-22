@@ -26,8 +26,8 @@ class Xenuti::ScannerReport < Hash
 
   def initialize
     self[:scan_info] = {
-      start_time: nil, end_time: nil, duration: nil,
-      scanner_name: nil, scanner_version: nil, exception: nil }
+      start_time: nil, end_time: nil, duration: nil, scanner_name: nil,
+      scanner_version: nil, exception: nil, relpath: '' }
 
     self[:warnings] = []
   end
@@ -39,14 +39,9 @@ class Xenuti::ScannerReport < Hash
   end
 
   def formatted_header
-    header = <<-EOF.unindent
-    ==============================
-    scanner:  #{scan_info.scanner_name}
-    version:  #{scan_info.scanner_version}
-    duration: #{scan_info.duration} s
-
-    total warnings: #{warnings.size}
-    EOF
+    header = formatted_header_start_banner
+    header << "directory: #{scan_info.relpath}\n" unless scan_info.relpath == ''
+    header << formatted_header_scan_info
     header << "new warnings:   #{new_warnings.size}\n" if diffed?
     header << "fixed warnings: #{fixed_warnings.size}\n" if diffed?
     header << formatted_header_exception if scan_info[:exception]
@@ -55,6 +50,20 @@ class Xenuti::ScannerReport < Hash
 
   def formatted_header_exception
     "\nERROR: " + scan_info.exception.message + "\n"
+  end
+
+  def formatted_header_start_banner
+    '=' * 30 + "\n"
+  end
+
+  def formatted_header_scan_info
+    <<-EOF.unindent
+    scanner:   #{scan_info.scanner_name}
+    version:   #{scan_info.scanner_version}
+    duration:  #{scan_info.duration} s
+
+    total warnings: #{warnings.size}
+    EOF
   end
 
   def formatted_header_end_banner

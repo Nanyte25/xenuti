@@ -54,7 +54,7 @@ class Xenuti::Config < Hash
       repo:               # Path to Git repository
       workdir:            # Working directory for Xenuti - holds reports,
                           # sources.. Don't change in diff mode between runs.
-      relative_path: ''   # Relative path to web application within repository
+      relative_path: [''] # Relative path to web application within repository
       quiet: false        # Suppress output
       loglevel: warn      # One of: fatal, error, warn, info, debug
       diff: false         # Diff mode - include only new warnings in report

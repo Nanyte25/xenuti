@@ -34,7 +34,7 @@ describe Xenuti::Config do
       config = Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read)
       expect(config.smtp.enabled).to be_false
       expect(config.general.quiet).to be_false
-      expect(config.general.relative_path).to be_eql('')
+      expect(config.general.relative_path).to be_eql([''])
     end
   end
 
@@ -44,7 +44,7 @@ describe Xenuti::Config do
       expect(config[:general][:repo]).to be_eql('git@example.com:user/repo')
       expect(config[:general][:workdir]).to be_nil
       expect(config.general.quiet).to be_false
-      expect(config.general.relative_path).to be_eql('')
+      expect(config.general.relative_path).to be_eql([''])
       expect(config.smtp.enabled).to be_false
       expect(config[:brakeman][:enabled]).to be_false
       expect(config[:bundler_audit][:enabled]).to be_true

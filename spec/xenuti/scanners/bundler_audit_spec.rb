@@ -83,7 +83,7 @@ describe Xenuti::BundlerAudit do
 
   describe '::check_config' do
     it 'should fail if app_dir is not present in config' do
-      config.general.app_dir = nil
+      config.general.source = nil
       expect do
         Xenuti::BundlerAudit.check_config(config)
       end.to raise_error TypeError
@@ -94,7 +94,8 @@ describe Xenuti::BundlerAudit do
     end
 
     it 'should pass when source is present in config' do
-      expect(Xenuti::BundlerAudit.check_config(config)).to be_true
+      alpha_config.general.source = ALPHA_REPO
+      expect(Xenuti::BundlerAudit.check_config(alpha_config)).to be_true
     end
   end
 
@@ -102,19 +103,16 @@ describe Xenuti::BundlerAudit do
     it 'throws exception when called disabled' do
       config.bundler_audit.enabled = false
       expect do
-        Xenuti::BundlerAudit.execute_scan(config)
+        Xenuti::BundlerAudit.execute_scan(config, '/some/path')
       end.to raise_error(RuntimeError)
     end
 
     it 'runs scan and captures BundlerAudit output' do
-      # Small hack - I don`t want to clone the repo to get source, so just
-      # hardcode it like this
-      alpha_config.general.app_dir = alpha_config.general.repo
 
       # By default alpha_config has all scanners disabled.
       alpha_config.bundler_audit.enabled = true
 
-      output = Xenuti::BundlerAudit.execute_scan(alpha_config)
+      output = Xenuti::BundlerAudit.execute_scan(alpha_config, ALPHA_REPO)
       # At this moment there are 16 vulnerabilities, might be more in future
       expect(output.scan(/Name:.*?Solution:.*?\n/m).size).to be >= 16
     end

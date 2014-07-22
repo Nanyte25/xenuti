@@ -11,7 +11,6 @@ require 'helpers/alpha_helper'
 describe Xenuti::Brakeman do
   let(:config) do
     config = Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read)
-    config.general.app_dir = ALPHA_REPO
     config
   end
   let(:alpha_config) { Xenuti::Config.from_yaml(File.new(ALPHA_CONFIG).read) }
@@ -77,7 +76,7 @@ describe Xenuti::Brakeman do
 
   describe '::check_config' do
     it 'should fail if source is not present in config' do
-      config.general.app_dir = nil
+      config.general.source = nil
       expect do
         Xenuti::Brakeman.check_config(config)
       end.to raise_error TypeError
@@ -88,7 +87,8 @@ describe Xenuti::Brakeman do
     end
 
     it 'should pass when source is present in config' do
-      expect(Xenuti::Brakeman.check_config(config)).to be_true
+      alpha_config.general.source = ALPHA_REPO
+      expect(Xenuti::Brakeman.check_config(alpha_config)).to be_true
     end
   end
 
@@ -96,19 +96,15 @@ describe Xenuti::Brakeman do
     it 'throws exception when called disabled' do
       config.brakeman.enabled = false
       expect do
-        Xenuti::Brakeman.execute_scan(config)
+        Xenuti::Brakeman.execute_scan(config, '/some/path')
       end.to raise_error(RuntimeError)
     end
 
     it 'runs scan and returns Brakeman output in JSON' do
-      # Small hack - I don`t want to clone the repo to get source, so just
-      # hardcode it like this
-      alpha_config.general.app_dir = alpha_config.general.repo
-
       # By default alpha_config has all scanners disabled.
       alpha_config.brakeman.enabled = true
 
-      output = Xenuti::Brakeman.execute_scan(alpha_config)
+      output = Xenuti::Brakeman.execute_scan(alpha_config, ALPHA_REPO)
       parsed = JSON.load(output)
       expect(parsed['scan_info']['app_path']).to be_eql(ALPHA_REPO)
     end

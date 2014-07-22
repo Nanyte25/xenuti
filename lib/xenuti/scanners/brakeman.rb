@@ -7,7 +7,7 @@
 require 'json'
 
 class Xenuti::Brakeman
-  include Xenuti::Scanner
+  include Xenuti::StaticAnalyzer
 
   class Warning < Xenuti::Warning
     CONFIDENCE = %w(High Medium Weak)
@@ -37,18 +37,19 @@ class Xenuti::Brakeman
 
   def self.check_config(config)
     config.verify do
-      unless Dir.exist? config.general.app_dir
-        xfail "Directory #{config.general.appdir} does not exist"
+      config.general.relative_path.each do |relpath|
+        app_dir = File.join(config.general.source, relpath)
+        xfail "Directory #{app_dir} does not exist" unless Dir.exist? app_dir
       end
     end
     $log.info 'Brakeman: configuration check passed'
     true
   end
 
-  def self.execute_scan(config)
+  def self.execute_scan(config, app_dir)
     xfail 'Brakeman is disabled' unless config.brakeman.enabled
-    $log.info 'Brakeman: starting scan'
-    output = %x(brakeman -q -f json #{config.general.app_dir})
+    $log.info "Brakeman: starting scan of #{app_dir}"
+    output = %x(brakeman -q -f json #{app_dir})
     $log.info 'Brakeman: scan finished'
     output
   end

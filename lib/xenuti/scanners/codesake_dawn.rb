@@ -7,7 +7,7 @@
 require 'json'
 
 class Xenuti::CodesakeDawn
-  include Xenuti::Scanner
+  include Xenuti::StaticAnalyzer
 
   class Warning < Xenuti::Warning
     SEVERITY = %w(critical high medium low info unknown)
@@ -22,8 +22,10 @@ class Xenuti::CodesakeDawn
   def self.check_requirements(config)
     %x(whereis dawn | grep '/')
     xfail 'CodesakeDawn: could not find executable.' if $?.exitstatus != 0
-    gemfile = config.general.app_dir + '/Gemfile.lock'
-    xfail 'CodesakeDawn: missing Gemfile.lock' unless File.exist?(gemfile)
+    config.general.relative_path.each do |relpath|
+      gemfile = File.join(config.general.source, relpath, 'Gemfile.lock')
+      xfail 'CodesakeDawn: missing Gemfile.lock' unless File.exist?(gemfile)
+    end
 
     $log.info 'CodesakeDawn: check_requirements passed'
     true
@@ -39,19 +41,20 @@ class Xenuti::CodesakeDawn
 
   def self.check_config(config)
     config.verify do
-      unless Dir.exist? config.general.app_dir
-        xfail "Directory #{config.general.appdir} does not exist"
+      config.general.relative_path.each do |relpath|
+        app_dir = File.join(config.general.source, relpath)
+        xfail "Directory #{app_dir} does not exist" unless Dir.exist? app_dir
       end
     end
     $log.info 'CodesakeDawn: configuration check passed'
     true
   end
 
-  def self.execute_scan(config)
+  def self.execute_scan(config, app_dir)
     xfail 'CodesakeDawn is disabled' unless config.codesake_dawn.enabled
 
-    $log.info 'CodesakeDawn: starting scan'
-    output = %x(dawn -j #{config.general.app_dir})
+    $log.info "CodesakeDawn: starting scan of #{app_dir}"
+    output = %x(dawn -j #{app_dir})
     $log.info 'CodesakeDawn: scan finished'
     output
   end

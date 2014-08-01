@@ -66,7 +66,8 @@ class Xenuti::Processor
   end
 
   def checkout_code(report)
-    Xenuti::Repository.fetch_source(config, config.general.workdir + '/source')
+    source_path = File.join(config.general.workdir, 'source')
+    Xenuti::Repository.fetch_source(config, source_path)
     report.scan_info.revision = config.general.revision
   end
 

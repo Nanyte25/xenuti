@@ -60,6 +60,15 @@ describe Xenuti::Brakeman do
       end
     end
     # rubocop:enable UselessComparison
+
+    describe '.eql?' do
+      it 'two warnings should be equal if they differ only in line' do
+        w1 = Xenuti::Brakeman::Warning.from_hash(line: 5, text: 'message')
+        w2 = Xenuti::Brakeman::Warning.from_hash(line: 3, text: 'message')
+        expect(w1.eql?(w2)).to be_true
+        expect(w2.eql?(w1)).to be_true
+      end
+    end
   end
 
   describe '::name' do
@@ -116,6 +125,42 @@ describe Xenuti::Brakeman do
       expect(report).to be_a(Xenuti::ScannerReport)
       expect(report.warnings[1]).to be_a(Xenuti::Brakeman::Warning)
       expect(report.warnings[1][:warning_code]).to be >= 73
+    end
+  end
+
+  describe 'new warnings with only line changed in diffed mode' do
+    # We should ignore warnings that differ from previously reported only in
+    # line - this means code above was edited and a place with weakness reported
+    # has shifted. These are false positives.
+    it 'should ignore new warnings if only line is changed' do
+      alpha_config.brakeman.enabled = true
+      source_path = File.join(alpha_config.general.workdir, 'source')
+      Xenuti::Repository.fetch_source(alpha_config, source_path)
+
+      # Run first scan
+      brakeman1 = Xenuti::Brakeman.new(alpha_config)
+      brakeman1.run_scan(ALPHA_REPO)
+      old_report = brakeman1.scanner_report('')
+
+      # Delete empty line from application_controller to shift one warning
+      file = File.join(ALPHA_REPO, 'app/controllers/application_controller.rb')
+      edited = ''
+      File.open(file, 'r').each do |line|
+        edited << line unless /^$/ =~ line
+      end
+      File.open(file, 'w') do |f|
+        f.write(edited)
+      end
+
+      # Execute second scan
+      brakeman2 = Xenuti::Brakeman.new(alpha_config)
+      brakeman2.run_scan(ALPHA_REPO)
+      new_report = brakeman2.scanner_report('')
+
+      # Diff the two reports and make sure line shift was ignored
+      diffed = Xenuti::ScannerReport.diff(old_report, new_report)
+      expect(diffed.new_warnings.size).to be_eql(0)
+      expect(diffed.fixed_warnings.size).to be_eql(0)
     end
   end
 end

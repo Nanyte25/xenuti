@@ -27,4 +27,15 @@ class Xenuti::Warning < Hash
     end
     output
   end
+
+  def eql?(other)
+    each_key do |key|
+      return false unless key == :line || self[key].eql?(other[key])
+    end
+    true
+  end
+
+  def hash
+    select { |k, _v| k != :line }.hash
+  end
 end

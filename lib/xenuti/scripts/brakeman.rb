@@ -14,7 +14,7 @@ if ARGV[0].nil?
 end
 
 if ARGV[0].strip == '-v'
-  puts %x(brakeman -v)
+  puts %x(brakeman -v).match(/[0-9].[0-9].[0-9]/)
   exit
 end
 

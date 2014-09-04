@@ -70,7 +70,7 @@ class Xenuti::Processor
           script_cfg[:relative_path] = [script_cfg[:relative_path]]
         end
         script_cfg[:relative_path].each do |relpath|
-          script_report = new_script_report(script, relpath)
+          script_report = new_script_report(script, script_cfg, relpath)
           execute_script(script, script_cfg[:args], script_report, relpath)
           report.script_reports << script_report
         end
@@ -79,7 +79,7 @@ class Xenuti::Processor
   end
   # rubocop:enable MethodLength
 
-  def new_script_report(script, relpath)
+  def new_script_report(script, script_cfg, relpath)
     version = %x(#{Xenuti::SCRIPTS[script]} -v 2>/dev/null)
 
     script_report = Xenuti::ScriptReport.new
@@ -87,6 +87,7 @@ class Xenuti::Processor
     script_report.scan_info.version = version.match(/\A[0-9](.[0-9])*\Z/)
     script_report.scan_info.revision = config[:content_update][:revision]
     script_report.scan_info.relpath = relpath
+    script_report.scan_info.args = script_cfg[:args]
     script_report
   end
 

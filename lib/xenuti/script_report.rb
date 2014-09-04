@@ -17,7 +17,7 @@ class Xenuti::ScriptReport < Hash
   def initialize
     self[:scan_info] = {
       start_time: nil, end_time: nil, duration: nil, script_name: nil,
-      script_version: nil, exception: nil, relpath: '', mode: nil,
+      script_version: nil, exception: nil, relpath: '', mode: nil, args: nil,
       revision: nil }
 
     self[:old_report] = {}
@@ -50,6 +50,7 @@ class Xenuti::ScriptReport < Hash
       script:         #{scan_info.script_name}
       version:        #{scan_info.version}
       duration:       #{duration} s
+      arguments:      #{scan_info.args}
       mode:           #{diffed? ? 'diff results' : 'full report'}
 
     EOF

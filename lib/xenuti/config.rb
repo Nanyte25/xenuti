@@ -39,8 +39,9 @@ require 'ruby_util/string'
 # and invoke check calling #check method. This works only if blocks passed raise
 # errors. If constraints should not be saved, but we need one-time-only check,
 # use #verify method.
+
 class Xenuti::Config < Hash
-  include HashWithMethodAccess
+  # include HashWithMethodAccess
   include HashWithConstraints
 
   # This annotated config is returned by 'xenuti generate_config'. To avoid
@@ -50,40 +51,38 @@ class Xenuti::Config < Hash
   ANNOTATED_DEFAULT_CONFIG = <<-EOF.unindent
     ---
     general:
-      name:               # Name of the project to scan - appears in report
-      repo:               # Path to Git repository
-      workdir:            # Working directory for Xenuti - holds reports,
-                          # sources.. Don't change in diff mode between runs.
-      relative_path: [''] # Relative path to web application within repository
-      quiet: false        # Suppress output
-      loglevel: warn      # One of: fatal, error, warn, info, debug
-      diff: false         # Diff mode - include only new warnings in report
-    active_scan:
-      deploy_script:      # Path to deploy script
-      cleanup_script:     # Path to cleanup script
-      deploy_variables:   # String of comma-separated environment variables
-      cleanup_variables:  # String of comma-separated environment variables
-      url:                # URL where application will be deployed
-    smtp:
-      enabled: false      # Enable to send report by mail
-      from:               # From mail address
-      to:                 # Destination - either mail address or array of
-                          # mail addresses to send report to.
-      server:             # SMTP server to use
-      port:               # SMTP port to use
-    brakeman:
-      enabled: true       # Enable to run Brakeman
-    codesake_dawn:
-      enabled: true       # Enable to run Codesake Dawn
-    bundler_audit:
-      enabled: true       # Enable to run Bundler Audit
+      name:                   # Name of the project to scan - appears in report
+      workdir:                # Working directory for Xenuti - holds reports,
+                              # sources.. Don't change in diff mode between runs
+      quiet: false            # Suppress output
+      loglevel: warn          # One of: fatal, error, warn, info, debug
+
+    content_update:
+      scm: git                # Choose from [git, svn]
+      repo:                   # Path to Git repository (URL)
+
+    process:
+      myscript.sh:
+        args:                 # Command line arguments passed to script
+        abort_on_fail: false  # Abort run if the script fails
+        diff: false           # Diff mode - include only new warnings in report
+        relative_path: ['']   # Relative path(s) to dir within repository
+        diff_ignore: []       # Which message fields to ignore during diff
+
+    report:
+      send_mail: false        # Enable to send report via mail
+      from:                   # From mail address
+      to:                     # Destination - either mail address or array of
+                              # mail addresses to send report to.
+      server:                 # SMTP server to use
+      port:                   # SMTP port to use
   EOF
 
-  # Define DEFAULT_CONFIG stripped out of comments
   DEFAULT_CONFIG = YAML.load(ANNOTATED_DEFAULT_CONFIG, safe: false)
+  DEFAULT_CONFIG.deep_symbolize_keys!
 
   def self.from_hash(hash)
-    new.recursive_merge! hash.deep_symbolize_keys
+    new.recursive_merge!(hash.deep_symbolize_keys).fill_default_values
   end
 
   def self.from_yaml(yaml_string)
@@ -92,6 +91,21 @@ class Xenuti::Config < Hash
 
   def initialize
     super
-    self.merge! DEFAULT_CONFIG
+  end
+
+  def fill_default_values
+    self[:process] ||= {}
+    self[:general] ||= {}
+    self[:content_update] ||= {}
+    self[:report] ||= {}
+
+    self[:general].soft_merge! DEFAULT_CONFIG[:general]
+    self[:content_update].soft_merge! DEFAULT_CONFIG[:content_update]
+    self[:report].soft_merge! DEFAULT_CONFIG[:report]
+
+    self[:process].each do |_script, script_cfg|
+      script_cfg.soft_merge! DEFAULT_CONFIG[:process][:'myscript.sh']
+    end
+    self
   end
 end

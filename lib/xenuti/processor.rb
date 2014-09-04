@@ -7,14 +7,10 @@
 require 'xenuti/repository'
 require 'logger'
 require 'ruby_util/multi_write_io'
+require 'json'
 
 class Xenuti::Processor
   attr_accessor :config
-
-  STATIC_ANALYZERS = [
-    Xenuti::Brakeman, Xenuti::CodesakeDawn, Xenuti::BundlerAudit]
-
-  ACTIVE_SCANNERS = []
 
   LOG_LEVEL = {
     'fatal' => Logger::FATAL, 'error' => Logger::ERROR,
@@ -31,12 +27,12 @@ class Xenuti::Processor
     unless $log
       logfile_path = File.join(Xenuti::Report.reports_dir(config), 'xenuti.log')
       targets = [File.new(logfile_path, 'w+')]
-      targets << STDOUT unless config.general.quiet
+      targets << STDOUT unless config[:general][:quiet]
       $log = ::Logger.new(MultiWriteIO.new(*targets))
       $log.formatter = proc do |severity, datetime, _progname, msg|
         "[#{datetime.strftime('%Y-%m-%d %I:%M.%L')}] #{severity}  #{msg}\n"
       end
-      $log.level = LOG_LEVEL[config.general.loglevel]
+      $log.level = LOG_LEVEL[config[:general][:loglevel]]
       at_exit { $log.close }
     end
   end
@@ -46,8 +42,7 @@ class Xenuti::Processor
     report.scan_info.start_time = Time.now
 
     checkout_code(report)
-    run_static_analysis(report)
-    run_active_scanners(report)
+    run_scripts(report)
 
     report.scan_info.end_time = Time.now
     # It is important to first output results, only then save it. If we saved
@@ -59,49 +54,73 @@ class Xenuti::Processor
     result
   end
 
-  def check_requirements
-    STATIC_ANALYZERS.each do |analyzer|
-      analyzer.check_requirements(config) if config[analyzer.name][:enabled]
-    end
-  end
-
   def checkout_code(report)
-    source_path = File.join(config.general.workdir, 'source')
+    source_path = File.join(config[:general][:workdir], 'source')
     Xenuti::Repository.fetch_source(config, source_path)
-    report.scan_info.revision = config.general.revision
+    report.scan_info.revision = config[:content_update][:revision]
   end
 
-  def run_static_analysis(report)
-    # Run only enabled analyzers
-    STATIC_ANALYZERS.select { |a| @config[a.name][:enabled] }.each do |klass|
-      @config.general.relative_path.each do |relpath|
-        scanner = klass.new(config)
-        scanner.run_scan(File.join(config.general.source, relpath))
-        report.scanner_reports << scanner.scanner_report(relpath)
-        scanner.save_output(relpath)
+  # rubocop:disable MethodLength
+  def run_scripts(report)
+    config[:process].each do |script, script_cfg|
+      if Xenuti::SCRIPTS[script.to_sym].nil?
+        $log.error "Path to #{script} unknown."
+      else
+        if script_cfg[:relative_path].is_a? String
+          script_cfg[:relative_path] = [script_cfg[:relative_path]]
+        end
+        script_cfg[:relative_path].each do |relpath|
+          script_report = new_script_report(script, relpath)
+          execute_script(script, script_cfg[:args], script_report, relpath)
+          report.script_reports << script_report
+        end
       end
     end
   end
+  # rubocop:enable MethodLength
 
-  def run_active_scanners(report)
-    Xenuti::Deployer.check_requirements(@config)
-    ACTIVE_SCANNERS.each do |klass|
-      if @config[klass.name][:enabled]
-        scanner = klass.new(config)
-        xfail 'Failed to deploy' unless Xenuti::Deployer.deploy(config)
-        scanner.run_scan
-        report.scanner_reports << scanner.scanner_report
-        xfail 'Failed to cleanup' unless Xenuti::Deployer.cleanup(config)
-      end
-    end
+  def new_script_report(script, relpath)
+    version = %x(#{Xenuti::SCRIPTS[script]} -v 2>/dev/null)
+
+    script_report = Xenuti::ScriptReport.new
+    script_report.scan_info.script_name = script
+    script_report.scan_info.version = version.match(/\A[0-9](.[0-9])*\Z/)
+    script_report.scan_info.revision = config[:content_update][:revision]
+    script_report.scan_info.relpath = relpath
+    script_report
   end
+
+  # rubocop:disable MethodLength
+  def execute_script(script, args, script_report, relpath)
+    script_report.scan_info.start_time = Time.now
+    filepath = File.join(config[:content_update][:source], relpath)
+
+    # execute script
+    $log.info "[#{script}] executing #{script} #{args} #{filepath}"
+    output = %x(#{Xenuti::SCRIPTS[script]} #{args} #{filepath})
+    $log.info "[#{script}] finished."
+
+    # parse (hopefully) JSON output
+    begin
+      script_report.messages = JSON.parse output
+    rescue JSON::ParserError => e
+      $log.error "[#{script}] Could not parse JSON output from script !"
+      script_report.scan_info.exception = e
+    end
+
+    script_report.scan_info.end_time = Time.now
+    script_report
+  end
+  # rubocop:enable MethodLength
 
   def output_results(report)
-    report = Xenuti::Report.diff(Xenuti::Report.prev_report(@config), report) \
-      if @config.general.diff && Xenuti::Report.prev_report(@config)
+    report.diff!(config, Xenuti::Report.prev_report(config)) \
+      if Xenuti::Report.prev_report(config)
     formatted = report.formatted(config)
-    puts formatted unless @config.general.quiet
-    Xenuti::ReportSender.new(config).send(formatted) if @config.smtp.enabled
+    puts formatted unless config[:general][:quiet]
+    if config[:report][:send_mail]
+      Xenuti::ReportSender.new(config).send(formatted)
+    end
     report
   end
 end

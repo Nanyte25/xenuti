@@ -32,18 +32,19 @@ File.open(ALPHA_CONFIG, 'w+') do |file|
     ---
     general:
       name: Alpha
-      repo: #{ALPHA_REPO}
       workdir: #{ALPHA_WORKDIR}
       quiet: true
       diff: false
-    smtp:
-      enabled: false
-    brakeman:
-      enabled: false
-    codesake_dawn:
-      enabled: false
-    bundler_audit:
-      enabled: false
+
+    content_update:
+      repo: #{ALPHA_REPO}
+
+    process:
+      brakeman:
+        args:
+
+    report:
+      send_mail: false
   EOF
 end
 

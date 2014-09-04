@@ -18,18 +18,18 @@ class Xenuti::ReportSender
   # rubocop:disable MethodLength
   def initialize(config)
     self.config = config
-    fail 'SMTP is disabled.' unless config.smtp.enabled
+    fail 'SMTP is disabled.' unless config[:report][:send_mail]
     config.verify do
-      fail unless smtp.server.is_a? String
-      fail unless smtp.port.is_a? Integer
-      fail unless Xenuti::ReportSender.mail_address? smtp.from
+      fail unless self[:report][:server].is_a? String
+      fail unless self[:report][:port].is_a? Integer
+      fail unless Xenuti::ReportSender.mail_address? self[:report][:from]
       # smpt.to can be either mail address or Array of mail addresses
-      if smtp.to.is_a?(Array)
-        smtp.to.each do |e|
+      if self[:report][:to].is_a?(Array)
+        self[:report][:to].each do |e|
           fail unless Xenuti::ReportSender.mail_address?(e)
         end
       else
-        fail unless Xenuti::ReportSender.mail_address?(smtp.to)
+        fail unless Xenuti::ReportSender.mail_address?(self[:report][:to])
       end
     end
   end
@@ -37,8 +37,13 @@ class Xenuti::ReportSender
   # rubocop:enable CyclomaticComplexity
 
   def send(report_content)
-    options = { address: config.smtp.server, port: config.smtp.port }
-    config.smtp.to.is_a?(Array) ? to = config.smtp.to : to = [config.smtp.to]
+    options = { address: config[:report][:server], \
+                port: config[:report][:port] }
+    if config[:report][:to].is_a?(Array)
+      to = config[:report][:to]
+    else
+      to = [config[:report][:to]]
+    end
     to.each do |mail_to|
       mail = compose_mail_to(mail_to, report_content)
       mail.delivery_method :smtp, options
@@ -49,8 +54,8 @@ class Xenuti::ReportSender
   def compose_mail_to(mail_to, content)
     mail = Mail.new
     mail.to(mail_to)
-    mail.from(config.smtp.from)
-    mail.subject("[Xenuti] Results for #{config.general.name}")
+    mail.from(config[:report][:from])
+    mail.subject("[Xenuti] Results for #{config[:general][:name]}")
     mail.body(content)
     mail
   end

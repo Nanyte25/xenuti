@@ -73,4 +73,27 @@ class Hash
     end
     self
   end
+
+  def soft_merge!(other)
+    other.each do |key, value|
+      if self[key].is_a?(Hash) && value.is_a?(Hash)
+        self[key].soft_merge!(value)
+      elsif self[key].nil?
+        self[key] = value
+      end
+    end
+    self
+  end
+
+  def soft_merge(other)
+    result = clone
+    other.each do |key, value|
+      if result[key].is_a?(Hash) && value.is_a?(Hash)
+        result[key].soft_merge!(value)
+      elsif result[key].nil?
+        result[key] = value
+      end
+    end
+    result
+  end
 end

@@ -14,9 +14,9 @@ describe Xenuti::Report do
   let(:report) { Xenuti::Report.new }
   let(:tmp) do
     tmp = Dir.mktmpdir
-    # at_exit do
-    #   FileUtils.rm_rf(tmp)
-    # end
+    at_exit do
+      FileUtils.rm_rf(tmp)
+    end
     tmp
   end
 

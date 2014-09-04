@@ -21,21 +21,22 @@ describe Xenuti::Processor do
   context '#checkout_code' do
     it 'should check out the code from repo to source directory' do
       processor.checkout_code(Xenuti::Report.new)
-      expect(Dir.compare(ALPHA_REPO, config.general.source)).to be_true
+      expect(Dir.compare(ALPHA_REPO, config[:content_update][:source])).to \
+        be_true
     end
   end
 
   context '#run' do
     it 'should return full report when run in full report mode' do
-      processor.config.brakeman.enabled = true
+      processor.config[:general][:name] = 'Alpha'
       report = processor.run
       expect(report).to be_a Xenuti::Report
-      expect(report.diffed?).to be_false
+      expect(report[:script_reports].first.diffed?).to be_false
     end
 
-    it 'should return report with just new warnings when run in diff mode' do
-      processor.config.brakeman.enabled = true
-      processor.config.general.diff = true
+    it 'should return report with just new messages when run in diff mode' do
+      processor.config[:process][:brakeman][:args] = nil
+      processor.config[:process][:brakeman][:diff] = true
 
       # Uncomment secret token - this should cause Brakeman to report Session
       # Setting warning
@@ -47,23 +48,23 @@ describe Xenuti::Processor do
       # Run once - older report will be reused from the above testcase
       report = processor.run
       expect(report).to be_a Xenuti::Report
-      expect(report.diffed?).to be_true
-      expect(report.scanner_reports[0].new_warnings.size).to be_eql(1)
-      expect(report.scanner_reports[0].new_warnings[0].warning_type).to \
+      expect(report[:script_reports].first.diffed?).to be_true
+      expect(report.script_reports.first.new_messages.size).to be_eql(1)
+      expect(report.script_reports.first.new_messages[0]['warning_type']).to \
         be_eql('Session Setting')
-      expect(report.scanner_reports[0].fixed_warnings.size).to be_eql(0)
+      expect(report.script_reports.first.fixed_messages.size).to be_eql(0)
     end
 
     it 'should fall back to full report mode when older report is not avail' do
-      processor.config.brakeman.enabled = true
-      processor.config.general.diff = true
+      processor.config[:process][:brakeman][:args] = nil
+      processor.config[:process][:brakeman][:diff] = true
 
       # Remove old reports, so diff can`t work
       FileUtils.rm_rf(ALPHA_WORKDIR + '/reports')
       report = processor.run
       expect(report).to be_a Xenuti::Report
-      expect(report.diffed?).to be_false
-      expect { report.scanner_reports[0].new_warnings }.to raise_error
+      expect(report[:script_reports].first.diffed?).to be_false
+      expect { report.scanner_reports[0].new_messages }.to raise_error
     end
   end
 end

@@ -13,11 +13,10 @@ class Xenuti::Repository
       if git_repo?(destination)
         update(destination)
       else
-        clone(cfg.general.repo, destination)
+        clone(cfg[:content_update][:repo], destination)
       end
-      cfg.general.source = destination
-      cfg.general.revision = revision(destination)
-      # cfg.general.app_dir = app_dir(destination, cfg.general.relative_path)
+      cfg[:content_update][:source] = destination
+      cfg[:content_update][:revision] = revision(destination)
     end
 
     def clone(source, destination)
@@ -62,9 +61,5 @@ class Xenuti::Repository
         Dir.chdir cwd
       end
     end
-
-    # def app_dir(root_dir, relative_path)
-    #   File.expand_path(root_dir) << '/' + (relative_path ? relative_path : '')
-    # end
   end
 end

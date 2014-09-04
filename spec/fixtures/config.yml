@@ -1,10 +1,11 @@
 ---
 general:
+  name: test
+
+content_update:
   repo: git@example.com:user/repo
   source: '/some/path'
-brakeman:
-  enabled: true
-codesake_dawn:
-  enabled: false
-bundler_audit:
-  enabled: true
+
+process:
+  my_script:
+    args: --some-arg

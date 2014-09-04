@@ -63,4 +63,30 @@ describe Hash do
       expect(hash1).to be_eql(a: 1, b: { c: 5, d: 3 }, e: 6)
     end
   end
+
+  describe '#soft_merge!' do
+    it 'should soft merge corectly' do
+      hash1 = { a: 1, b: { c: 2, d: 3 }, e: { f: 4 } }
+      hash2 = { b: { c: 5, g: 8 }, e: 6, h: 9 }
+      hash1.soft_merge!(hash2)
+      expect(hash1).to be_eql(a: 1, b: { c: 2, d: 3, g: 8 }, e: { f: 4 }, h: 9)
+    end
+  end
+
+  describe '#soft_merge' do
+    it 'should return new hash' do
+      hash1 = { a: 1, b: 2 }
+      hash2 = { a: 2, c: 3 }
+      expect(hash1.soft_merge(hash2)).to be_eql(a: 1, b: 2, c: 3)
+      expect(hash1).to be_eql(a: 1, b: 2)
+      expect(hash2).to be_eql(a: 2, c: 3)
+    end
+
+    it 'should soft merge corectly' do
+      hash1 = { a: 1, b: { c: 2, d: 3 }, e: { f: 4 } }
+      hash2 = { b: { c: 5, g: 8 }, e: 6 }
+      result = hash1.soft_merge(hash2)
+      expect(result).to be_eql(a: 1, b: { c: 2, d: 3, g: 8 }, e: { f: 4 })
+    end
+  end
 end

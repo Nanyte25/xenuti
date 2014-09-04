@@ -15,11 +15,11 @@ require 'date'
 #
 #  {
 #    :scan_info => {},
-#    :scanner_reports => []
+#    :script_reports => []
 #  }
 #
 # :scan_info holds hash with general information about the scan, while
-# :scanner_reports points to an Array of Xenuti::ScannerReports. Moreover, it
+# :script_reports points to an Array of Xenuti::ScannerReports. Moreover, it
 # also has one attribute :diffed, which indicates whether the report is result
 # of a diff between two other reports.
 #
@@ -48,8 +48,6 @@ class Xenuti::Report < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
-  attr_accessor :diffed
-
   REPORT_NAME = 'report.yml'
 
   # Load report saved by #save method.
@@ -61,7 +59,8 @@ class Xenuti::Report < Hash
   # Returns the oldest report that can be found in Xenuti`s workdir, as defined
   # in configuration.
   def self.prev_report(config)
-    search_path = File.join(config.general.workdir, '/reports/**/', REPORT_NAME)
+    search_path = File.join(config[:general][:workdir],
+                            '/reports/**/', REPORT_NAME)
     reportfiles = Dir.glob search_path
     latest_time = Time.at(0)
     latest = nil
@@ -73,43 +72,21 @@ class Xenuti::Report < Hash
     latest
   end
 
-  # Returns new report, which is a result of calculating difference of two other
-  # reports. Diffed report contains :scan_info of newer report, but also some
-  # info about older report (such as revision, on which it ran).
-  #
-  # Most importantly, all scanner reports also contain :new_warnings and
-  # :fixed_warnings keys, which point to Array of Xenuti::Warnings (see
-  # Xenuti::ScannerReport::diff).
-  def self.diff(old_report, new_report)
-    report = Xenuti::Report.new
-    report.scan_info = new_report.scan_info
-    new_report.scanner_reports.each do |new_sr|
-      scanner = new_sr.scan_info.scanner_name
-      relpath = new_sr.scan_info.relpath
-      old_sr = Xenuti::Report.find_scanner_report(old_report, scanner, relpath)
-      report.scanner_reports << Xenuti::ScannerReport.diff(old_sr, new_sr)
-    end
-    report.diffed = true
-    report.old_report = old_report
-    report
-  end
-
-  # Finds scanners report corresponding to the scanner_name.
-  def self.find_scanner_report(report, scanner_name, relpath)
-    report.scanner_reports.select do |r|
-      r.scan_info.scanner_name == scanner_name &&
+  def self.find_script_report(report, script_name, relpath)
+    report.script_reports.select do |r|
+      r.scan_info.script_name == script_name &&
       r.scan_info.relpath == relpath
     end.first
   end
 
   def self.reports_dir(config)
     timestamp = Time.now.to_datetime.rfc3339
-    @@dir ||= File.join(config.general.workdir, 'reports', timestamp)
+    @@dir ||= File.join(config[:general][:workdir], 'reports', timestamp)
   end
 
   def initialize
     self[:scan_info] = { version: Xenuti::Version }
-    self[:scanner_reports] = []
+    self[:script_reports] = []
     @diffed = false
   end
 
@@ -130,8 +107,8 @@ class Xenuti::Report < Hash
   # Returns plaintext pretty-formatted version of a report.
   def formatted(config)
     report = formatted_header(config)
-    scanner_reports.each do |scanner_report|
-      report << scanner_report.formatted + "\n"
+    script_reports.each do |script_report|
+      report << script_report.formatted + "\n"
     end
     report
   end
@@ -144,7 +121,6 @@ class Xenuti::Report < Hash
     EOF
     header << formatted_header_scan_info + "\n"
     header << formatted_header_config_info(config) + "\n"
-    header << formatted_header_diff_info + "\n" if diffed?
     header << formatted_header_end_banner + "\n"
   end
 
@@ -154,23 +130,14 @@ class Xenuti::Report < Hash
     start time: #{scan_info.start_time}
     end time:   #{scan_info.end_time}
     duration:   #{duration} s
-    mode:       #{diffed? ? 'diff results' : 'full report'}
     EOF
   end
 
   def formatted_header_config_info(config)
     <<-EOF.unindent
-    name:       #{config.general.name}
-    repo:       #{config.general.repo}
-    revision:   #{config.general.revision}
-    EOF
-  end
-
-  def formatted_header_diff_info
-    <<-EOF.unindent
-    [diffed with]
-    start time: #{old_report.scan_info.start_time}
-    revision:   #{old_report.scan_info.revision}
+    name:       #{config[:general][:name]}
+    repo:       #{config[:content_update][:repo]}
+    revision:   #{config[:content_update][:revision]}
     EOF
   end
 
@@ -182,10 +149,22 @@ class Xenuti::Report < Hash
     (scan_info.end_time - scan_info.start_time).round(2)
   end
 
-  def diffed?
-    # TODO: get rid of unnecessary attribute. Report is diffed when it contains
-    # reference to old_report and all scanner reports are diffed. Also update
-    # doc text above.
-    @diffed == true
+  # Returns new report, which is a result of calculating difference of two other
+  # reports. Diffed report contains :scan_info of newer report, but also some
+  # info about older report (such as revision, on which it ran).
+  #
+  # Most importantly, all scanner reports also contain :new_warnings and
+  # :fixed_warnings keys, which point to Array of Xenuti::Warnings (see
+  # Xenuti::ScannerReport::diff).
+  def diff!(config, old)
+    script_reports.each do |new_sr|
+      script_name = new_sr.scan_info.script_name
+      if config[:process][script_name][:diff]
+        relpath = new_sr.scan_info.relpath
+        old_sr = Xenuti::Report.find_script_report(old, script_name, relpath)
+        new_sr.diff!(old_sr)
+      end
+    end
+    self
   end
 end

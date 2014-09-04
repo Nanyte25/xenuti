@@ -9,8 +9,8 @@ require 'spec_helper'
 describe Xenuti::ReportSender do
   let(:config) do
     c = {
-      smtp: {
-        enabled: true,
+      report: {
+        send_mail: true,
         server: 'smtp.server',
         port:   25,
         from: 'from@example.com',
@@ -29,30 +29,30 @@ describe Xenuti::ReportSender do
     end
 
     it 'should verify server is present and is a String' do
-      config.smtp.server = nil
+      config[:report][:server] = nil
       expect { Xenuti::ReportSender.new(config) }.to raise_error RuntimeError
-      config.smtp.server = :servername
+      config[:report][:server] = :servername
       expect { Xenuti::ReportSender.new(config) }.to raise_error RuntimeError
     end
 
     it 'should verify port is present and is an Integer' do
-      config.smtp.port = nil
+      config[:report][:port] = nil
       expect { Xenuti::ReportSender.new(config) }.to raise_error RuntimeError
-      config.smtp.port = :port
+      config[:report][:port] = :port
       expect { Xenuti::ReportSender.new(config) }.to raise_error RuntimeError
     end
 
     it 'should verify from is present and is an email address' do
-      config.smtp.from = nil
+      config[:report][:from] = nil
       expect { Xenuti::ReportSender.new(config) }.to raise_error RuntimeError
-      config.smtp.from = 'foo@bar@baz'
+      config[:report][:from] = 'foo@bar@baz'
       expect { Xenuti::ReportSender.new(config) }.to raise_error RuntimeError
     end
 
     it 'should verify to is present and is an email address' do
-      config.smtp.to = nil
+      config[:report][:to] = nil
       expect { Xenuti::ReportSender.new(config) }.to raise_error RuntimeError
-      config.smtp.to = 'foo@bar@baz'
+      config[:report][:to] = 'foo@bar@baz'
       expect { Xenuti::ReportSender.new(config) }.to raise_error RuntimeError
     end
   end

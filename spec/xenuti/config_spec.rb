@@ -26,7 +26,7 @@ describe Xenuti::Config do
       config = Xenuti::Config.from_yaml(File.new(CONFIG_FILEPATH).read)
       expect(config[:general][:quiet]).to be_false
       expect(config[:general][:loglevel]).to be_eql('warn')
-      expect(config[:content_update][:scm]).to be_eql('git')
+      expect(config[:content_update][:backend]).to be_eql('git')
       expect(config[:process][:my_script][:relative_path]).to be_eql([''])
     end
   end
@@ -37,7 +37,7 @@ describe Xenuti::Config do
       expect(config[:general][:name]).to be_eql('test')
       expect(config[:general][:workdir]).to be_nil
       expect(config[:general][:quiet]).to be_false
-      expect(config[:content_update][:scm]).to be_eql('git')
+      expect(config[:content_update][:backend]).to be_eql('git')
       expect(config[:report][:send_mail]).to be_false
       expect(config[:process][:my_script][:diff]).to be_false
       expect(config[:process][:my_script][:relative_path]).to be_eql([''])

@@ -14,10 +14,11 @@ end
 
 require 'xenuti/version'
 require 'xenuti/config'
-require 'xenuti/repository'
 require 'xenuti/script_report'
 require 'xenuti/warning'
 require 'xenuti/report'
 require 'xenuti/report_sender'
 require 'xenuti/scripts/scripts'
+require 'xenuti/content_update/content_update'
+require 'xenuti/content_update/git'
 require 'xenuti/processor'

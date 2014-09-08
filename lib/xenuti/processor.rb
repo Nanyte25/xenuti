@@ -4,7 +4,6 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
-require 'xenuti/repository'
 require 'logger'
 require 'ruby_util/multi_write_io'
 require 'json'
@@ -41,7 +40,7 @@ class Xenuti::Processor
     report = Xenuti::Report.new
     report.scan_info.start_time = Time.now
 
-    checkout_code(report)
+    content_update(report)
     run_scripts(report)
 
     report.scan_info.end_time = Time.now
@@ -54,10 +53,15 @@ class Xenuti::Processor
     result
   end
 
-  def checkout_code(report)
-    source_path = File.join(config[:general][:workdir], 'source')
-    Xenuti::Repository.fetch_source(config, source_path)
-    report.scan_info.revision = config[:content_update][:revision]
+  def content_update(report)
+    backend = config[:content_update][:backend]
+    if backend == 'git'
+      Xenuti::ContentUpdate::Git.update(config, report)
+    elsif backend == 'bugzilla_flaws'
+      Xenuti::ContentUpdate::BugillaFlaws.update(config, report)
+    else
+      xfail("Unknown content update backed: #{backend}")
+    end
   end
 
   # rubocop:disable MethodLength

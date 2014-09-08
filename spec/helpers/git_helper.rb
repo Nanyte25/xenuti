@@ -22,7 +22,7 @@ end
 %x(pushd #{ORIGIN_REPO}; git add test; git commit -m 'commit1'; popd )
 
 # Clone it to another repo
-%x(git clone #{ORIGIN_REPO} #{OUTDATED_REPO} 2>&1)
+%x(git clone #{ORIGIN_REPO} #{File.join(OUTDATED_REPO, 'source')} 2>&1)
 
 # .. and add some commit to original repo to make cloned out outdated
 File.open("#{ORIGIN_REPO}/test", 'w') do |file|

@@ -58,7 +58,7 @@ class Xenuti::Config < Hash
       loglevel: warn          # One of: fatal, error, warn, info, debug
 
     content_update:
-      scm: git                # Choose from [git, svn]
+      backend: git            # Choose from [git, bugzilla_flaws]
       repo:                   # Path to Git repository (URL)
 
     process:

@@ -4,29 +4,32 @@
 # modify, copy, or redistribute it subject to the terms and conditions of the
 # MIT license.
 
-class Xenuti::Repository
+class Xenuti::ContentUpdate::Git
   class << self
     # TODO: add git to dependencies
 
-    def fetch_source(cfg, destination)
+    def update(config, report)
+      destination = File.join(config[:general][:workdir], 'source')
       destination = File.expand_path(destination)
+      # TODO: error check for non-empty dir
       if git_repo?(destination)
-        update(destination)
+        git_update(destination)
       else
-        clone(cfg[:content_update][:repo], destination)
+        git_clone(config[:content_update][:repo], destination)
       end
-      cfg[:content_update][:source] = destination
-      cfg[:content_update][:revision] = revision(destination)
+      config[:content_update][:source] = destination
+      config[:content_update][:revision] = git_revision(destination)
+      report.scan_info.revision = config[:content_update][:revision]
     end
 
-    def clone(source, destination)
+    def git_clone(source, destination)
       $log.info "Cloning #{source} to #{destination} ..."
       %x(git clone #{source} #{destination} 2>&1)
       fail 'Git clone failed' if $?.exitstatus != 0
       $log.info '... cloning done.'
     end
 
-    def update(git_repo)
+    def git_update(git_repo)
       $log.info "Updating git repository #{git_repo} ..."
       cwd = Dir.pwd
       begin
@@ -52,7 +55,7 @@ class Xenuti::Repository
       end
     end
 
-    def revision(dir)
+    def git_revision(dir)
       cwd = Dir.pwd
       begin
         Dir.chdir dir

@@ -18,9 +18,9 @@ describe Xenuti::Processor do
   end
   let(:processor) { Xenuti::Processor.new(config) }
 
-  context '#checkout_code' do
+  context '#content_update' do
     it 'should check out the code from repo to source directory' do
-      processor.checkout_code(Xenuti::Report.new)
+      processor.content_update(Xenuti::Report.new)
       expect(Dir.compare(ALPHA_REPO, config[:content_update][:source])).to \
         be_true
     end

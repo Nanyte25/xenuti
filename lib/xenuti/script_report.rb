@@ -89,20 +89,24 @@ class Xenuti::ScriptReport < Hash
     output
   end
 
+  # rubocop:disable MethodLength
   def format_message(message)
     return message if message.is_a? String
     if message.is_a? Array
       return message.join("\n")
     elsif message.is_a? Hash
       out = ''
+      key_maxlen = message.key_maxlen + 1
       message.each do |k, v|
-        out << "#{k}: #{v}\n" unless v.nil?
+        out << format("%-#{key_maxlen}s %s\n", k + ':', v) unless v.nil?
       end
       return out
     else
-      ''
+      $log.error "Message must be String, Array or Hash, is: #{message.class}"
+      return ''
     end
   end
+  # rubocop:enable MethodLength
 
   def diff!(old_report)
     if old_report.nil? || old_report.messages.nil? || old_report.scan_info.nil?

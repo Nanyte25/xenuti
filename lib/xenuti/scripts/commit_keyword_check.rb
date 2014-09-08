@@ -9,16 +9,18 @@
 require 'json'
 require 'optparse'
 require 'set'
+require 'uri'
 
 VERSION = '0.1.0'
 
 class Commit
-  attr_reader :id, :author, :message, :diff
+  attr_reader :id, :author, :message, :diff, :date
   attr_accessor :trigger
 
   def initialize(string)
     @id = string.match(/[a-f0-9]+/).to_s
     @author = string.match(/(?<=Author: )[^\n]*/).to_s
+    @date = string.match(/(?<=Date:   )[^\n]*/).to_s
     @message = ''
     @diff = ''
     parse_message_diff(string)
@@ -79,32 +81,43 @@ end
 
 messages = Set.new
 
-# Dirty hack - since the split has lookahead for \n, first 'commit' would not
-# be removed
-output = "\n" + %x(git -C #{gitrepo} log -p --since=2.weeks)
+old_pwd = Dir.pwd
+begin
+  Dir.chdir gitrepo
+  fetch_url = %x(git remote show origin).match(/(?<=Fetch URL: ).*(?=.git)/)
+  # Dirty hack - since the split has lookahead for \n, first 'commit' would not
+  # be removed
+  output = "\n" + %x(git log -p --date=iso8601 --since=2.weeks)
+ensure
+  Dir.chdir old_pwd
+end
 
 output.split(/(?<=\n)commit/).each do |commit_plain|
   commit = Commit.new(commit_plain)
+  matched_keyword = nil
 
   case
   when opts[:keyword].any? { |k| commit_plain.match k }
     matched_keyword = opts[:keyword].select { |k| commit_plain.match k }.first
-    messages << {
-      trigger: "Commit matched keyword #{matched_keyword}",
-      commit: commit.id, author: commit.author, message: commit.message }
 
   when opts[:author].any? { |a| commit.author.match a }
     matched_keyword = opts[:author].select { |k| commit.author.match k }.first
-    messages << {
-      trigger: "Commit`s author matched #{matched_keyword}",
-      commit: commit.id, author: commit.author, message: commit.message }
 
   when opts[:diff].any? { |d| commit.diff.match d }
     matched_keyword = opts[:diff].select { |k| commit.diff.match k } .first
-    messages << {
-      trigger: "Commit`s diff matched #{matched_keyword}",
-      commit: commit.id, author: commit.author, message: commit.message }
   end
+
+  if matched_keyword
+    msg = {
+      trigger: "Commit matched keyword \"#{matched_keyword}\"",
+      commit: commit.id, author: commit.author, date: commit.date }
+    if fetch_url.to_s.match(/github.com/)
+      msg[:URL] =  URI.join(fetch_url.to_s + '/', 'commit/', commit.id)
+    end
+    msg[:message] = commit.message
+    messages << msg
+  end
+
 end
 
 puts JSON.dump messages.to_a

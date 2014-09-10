@@ -29,7 +29,7 @@ class Xenuti::Processor
       targets << STDOUT unless config[:general][:quiet]
       $log = ::Logger.new(MultiWriteIO.new(*targets))
       $log.formatter = proc do |severity, datetime, _progname, msg|
-        "[#{datetime.strftime('%Y-%m-%d %I:%M.%L')}] #{severity}  #{msg}\n"
+        "[#{datetime.strftime('%Y-%m-%d %I:%M:%S.%L')}] #{severity}  #{msg}\n"
       end
       $log.level = LOG_LEVEL[config[:general][:loglevel]]
       at_exit { $log.close }
@@ -58,7 +58,7 @@ class Xenuti::Processor
     if backend == 'git'
       Xenuti::ContentUpdate::Git.update(config, report)
     elsif backend == 'bugzilla_flaws'
-      Xenuti::ContentUpdate::BugillaFlaws.update(config, report)
+      Xenuti::ContentUpdate::BugzillaFlaws.update(config, report)
     else
       xfail("Unknown content update backed: #{backend}")
     end

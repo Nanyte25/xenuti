@@ -84,7 +84,8 @@ messages = Set.new
 old_pwd = Dir.pwd
 begin
   Dir.chdir gitrepo
-  fetch_url = %x(git remote show origin).match(/(?<=Fetch URL: ).*(?=.git)/)
+  fetch_url = %x(git remote show origin).match(/(?<=Fetch URL: ).*/).to_s
+  fetch_url.gsub!('.git','')
   # Dirty hack - since the split has lookahead for \n, first 'commit' would not
   # be removed
   output = "\n" + %x(git log -p --date=iso8601 --since=2.weeks)
@@ -111,7 +112,7 @@ output.split(/(?<=\n)commit/).each do |commit_plain|
     msg = {
       trigger: "Commit matched keyword \"#{matched_keyword}\"",
       commit: commit.id, author: commit.author, date: commit.date }
-    if fetch_url.to_s.match(/github.com/)
+    if fetch_url.match(/github.com/)
       msg[:URL] =  URI.join(fetch_url.to_s + '/', 'commit/', commit.id)
     end
     msg[:message] = commit.message

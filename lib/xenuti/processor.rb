@@ -103,7 +103,7 @@ class Xenuti::Processor
 
     # execute script
     $log.info "[#{script}] executing #{script} #{args} #{filepath}"
-    output = %x(#{Xenuti::SCRIPTS[script]} #{args} #{filepath})
+    output = %x(#{Xenuti::SCRIPTS[script]} #{args.strip} #{filepath})
     $log.info "[#{script}] finished."
 
     # parse (hopefully) JSON output

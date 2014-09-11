@@ -71,7 +71,7 @@ class Xenuti::ContentUpdate::BugzillaFlaws
               end
             end
             downloaded_count += to_save.size
-            $log.info "Downloaded #{downloaded_count} bugs"
+            $log.info "Downloaded #{downloaded_count} flaws."
             to_save = []
           end
         end
@@ -132,7 +132,7 @@ class Xenuti::ContentUpdate::BugzillaFlaws
       current_flaws(xmlrpc_client).each do |curr|
         if cached[curr['id']].nil? ||
            curr['last_change_time'] > cached[curr['id']]['last_change_time']
-          to_download << current['id']
+          to_download << curr['id']
         end
       end
       $log.info '... done.'

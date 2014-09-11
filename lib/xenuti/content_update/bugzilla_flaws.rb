@@ -9,12 +9,12 @@ require 'pstore'
 require 'json'
 
 class Xenuti::ContentUpdate::BugzillaFlaws
-  THREAD_NUM = 16 # sweet spot
-  STORE_THREAD_TIMEOUT = 3
+  THREAD_NUM = 16             # determined by magic
+  STORE_THREAD_TIMEOUT = 10   # and alignment of stars
   REDHAT_BUGZILLA = 'bugzilla.redhat.com'
 
   class << self
-    def update(config, report)
+    def update(config, _report)
       client = XMLRPC::Client.new('bugzilla.redhat.com', '/xmlrpc.cgi',
                                   nil, nil, nil, nil, nil, true, 60)
       FileUtils.mkdir_p config[:general][:workdir]
@@ -47,7 +47,7 @@ class Xenuti::ContentUpdate::BugzillaFlaws
 
     def get_store(config)
       store_path = File.join(config[:general][:workdir], 'cached')
-      store = PStore.new(store_path, thread_safe = true)
+      store = PStore.new(store_path, true)
       if(store.transaction { store[:flaws] }.nil?)
         store.transaction { store[:flaws] = {} }
       end
@@ -59,11 +59,9 @@ class Xenuti::ContentUpdate::BugzillaFlaws
       mutex = Mutex.new
       to_save = []
 
-
       # Saving to PStore is slow if it`s big - this is a worker thread that will
       # save bugs from to_save queue to PStore in chunks.
       store_thread = Thread.new do
-
         while true
           sleep STORE_THREAD_TIMEOUT
           mutex.synchronize do
@@ -72,7 +70,6 @@ class Xenuti::ContentUpdate::BugzillaFlaws
                 store[:flaws][bug['id']] = bug
               end
             end
-            $log.debug "Saved #{to_save.collect { |b| b['id'] }}"
             downloaded_count += to_save.size
             $log.info "Downloaded #{downloaded_count} bugs"
             to_save = []
@@ -87,42 +84,35 @@ class Xenuti::ContentUpdate::BugzillaFlaws
           client = XMLRPC::Client.new('bugzilla.redhat.com', '/xmlrpc.cgi',
                                   nil, nil, nil, nil, nil, true, 60)
           while id = mutex.synchronize { ids_to_download.shift }
-            bug = client.call('Bug.search', {
-              :id             => id,
-              :component      => 'vulnerability',
-              :include_fields => ['alias', 'blocks', 'comments', 'creation_time',
-              'creator', 'depends_on', 'id', 'keywords', 'last_change_time',
-              'priority', 'resolution', 'severity', 'status', 'summary',
-              'whiteboard'],
-              :product        => 'Security Response'
-            })['bugs'].first
+            bug = client.call('Bug.get',
+              ids: [id],
+              include_fields: %w(alias blocks comments creation_time creator
+                depends_on id keywords last_change_time priority resolution
+                severity status summary whiteboard))['bugs'].first
             convert_xmlrpc_times(bug)
 
             mutex.synchronize { to_save << bug }
-
-            # store.transaction { store[:flaws][bug['id']] = bug }
-            $log.debug "Downloaded bugzilla #{bug['id']}"
           end
         end
       }.each(&:join)
 
       5.times do
-        if(to_save.empty?)
+        if to_save.empty?
           store_thread.kill
           break
         end
         sleep STORE_THREAD_TIMEOUT
       end
 
-      $log.info "... done."
+      $log.info '... done.'
     end
 
     def current_flaws(xmlrpc_client)
-      if @current.nil? 
-        @current = xmlrpc_client.call('Bug.search', {
-          component:      'vulnerability',
-          product:        'Security Response',
-          include_fields: ['id','last_change_time']})['bugs']
+      if @current.nil?
+        @current = xmlrpc_client.call('Bug.search',
+          component: 'vulnerability',
+          product: 'Security Response',
+          include_fields: %w(id last_change_time))['bugs']
         @current.each do |bug|
           convert_xmlrpc_times(bug)
         end
@@ -136,16 +126,16 @@ class Xenuti::ContentUpdate::BugzillaFlaws
 
     # Returns Array of vulnerability IDs that are either missing or outdated
     def flaws_to_download(store, xmlrpc_client)
-      $log.info "Determining flaws to be downloaded from bugzilla ..."
+      $log.info 'Determining flaws to be downloaded from bugzilla ...'
       to_download = []
       cached = cached_flaws(store)
-      current_flaws(xmlrpc_client).each do |current|
-        if(cached[current['id']].nil? ||
-          current['last_change_time'] > cached[current['id']]['last_change_time'])
+      current_flaws(xmlrpc_client).each do |curr|
+        if cached[curr['id']].nil? ||
+           curr['last_change_time'] > cached[curr['id']]['last_change_time']
           to_download << current['id']
         end
       end
-      $log.info "... done."
+      $log.info '... done.'
       to_download
     end
   end

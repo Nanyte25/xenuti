@@ -98,7 +98,8 @@ class Xenuti::Processor
   # rubocop:disable MethodLength
   def execute_script(script, args, script_report, relpath)
     script_report.scan_info.start_time = Time.now
-    filepath = File.join(config[:content_update][:source], relpath)
+    filepath = config[:content_update][:source]
+    filepath = File.join(filepath, relpath) unless relpath.empty?
 
     # execute script
     $log.info "[#{script}] executing #{script} #{args} #{filepath}"

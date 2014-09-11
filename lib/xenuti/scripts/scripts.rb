@@ -7,7 +7,8 @@
 module Xenuti
   SCRIPTS = {
     brakeman: 'brakeman.rb',
-    commit_keyword_check: 'commit_keyword_check.rb'
+    commit_keyword_check: 'commit_keyword_check.rb',
+    bugs_need_cwe: 'bugs_need_cwe.rb'
   }
 
   scripts_folder = File.dirname(__FILE__)

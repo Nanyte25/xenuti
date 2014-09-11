@@ -85,7 +85,7 @@ old_pwd = Dir.pwd
 begin
   Dir.chdir gitrepo
   fetch_url = %x(git remote show origin).match(/(?<=Fetch URL: ).*/).to_s
-  fetch_url.gsub!('.git','')
+  fetch_url.gsub!('.git', '')
   # Dirty hack - since the split has lookahead for \n, first 'commit' would not
   # be removed
   output = "\n" + %x(git log -p --date=iso8601 --since=2.weeks)

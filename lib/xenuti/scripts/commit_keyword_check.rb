@@ -105,9 +105,6 @@ if opts['config_file']
   end
 end
 
-
-$stderr.puts opts.inspect 
-
 messages = Set.new
 
 old_pwd = Dir.pwd

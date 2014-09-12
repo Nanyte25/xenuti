@@ -32,7 +32,7 @@ class Xenuti::ScriptReport < Hash
 
   # rubocop:disable CyclomaticComplexity
   def formatted_header
-    header = '=' * 30 + "\n"
+    header = '=' * 55 + "\n"
     unless scan_info.relpath == ''
       header << "directory:      #{scan_info.relpath}\n"
     end
@@ -41,7 +41,7 @@ class Xenuti::ScriptReport < Hash
     header << "total messages: #{messages.size}\n" unless scan_info[:exception]
     header << formatted_header_diff_msg if diffed? && !scan_info[:exception]
     header << formatted_header_exception if scan_info[:exception]
-    header << '=' * 30 + "\n"
+    header << '=' * 55 + "\n\n"
   end
   # rubocop:enable CyclomaticComplexity
 
@@ -80,11 +80,9 @@ class Xenuti::ScriptReport < Hash
     output = ''
     warns_to_print = diffed? ? new_messages : messages
     if warns_to_print.size == 0
-      output << "No new messages.\n"
+      output << "No messages.\n"
     else
-      warns_to_print.each do |message|
-        output << format_message(message) + "\n"
-      end
+      output << warns_to_print.map{|m| format_message(m)}.join("\n" + '-'*55 + "\n\n")
     end
     output
   end

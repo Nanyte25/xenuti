@@ -14,7 +14,7 @@ require 'uri'
 VERSION = '0.1.0'
 
 class Commit
-  attr_reader :id, :author, :message, :diff, :date
+  attr_reader :id, :author, :message, :diff, :diff_added, :date
   attr_accessor :trigger
 
   def initialize(string)
@@ -24,10 +24,13 @@ class Commit
     @message = ''
     @diff = ''
     parse_message_diff(string)
+    @diff_added = parse_diff_added(@diff)
+    $stderr.puts "Commit #{@id} diff: #{@diff_added}\n#{'=' * 20}"
   end
 
   private
 
+  # Given full commit, this will parse diff and store it in @diff
   def parse_message_diff(string)
     parsing_message_part = true
 
@@ -43,6 +46,11 @@ class Commit
       end
     end
     @message = "\n" + message
+  end
+
+  # Given full diff, filter out only lines added 
+  def parse_diff_added(diff)
+    diff.lines.select {|l| l.match /^\+[^+].*/}.join
   end
 end
 
@@ -99,13 +107,17 @@ output.split(/(?<=\n)commit/).each do |commit_plain|
 
   case
   when opts[:keyword].any? { |k| commit_plain.match k }
-    matched_keyword = opts[:keyword].select { |k| commit_plain.match k }.first
+    matched_keyword = opts[:keyword].select do |k|
+      commit.author.match(k) ||
+      commit.diff_added.match(k) ||
+      commit.message.match(k)
+    end.first
 
   when opts[:author].any? { |a| commit.author.match a }
     matched_keyword = opts[:author].select { |k| commit.author.match k }.first
 
   when opts[:diff].any? { |d| commit.diff.match d }
-    matched_keyword = opts[:diff].select { |k| commit.diff.match k } .first
+    matched_keyword = opts[:diff].select { |k| commit.diff_added.match k }.first
   end
 
   if matched_keyword

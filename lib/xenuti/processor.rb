@@ -100,10 +100,11 @@ class Xenuti::Processor
     script_report.scan_info.start_time = Time.now
     filepath = config[:content_update][:source]
     filepath = File.join(filepath, relpath) unless relpath.empty?
+    args = args.nil? ? '' : args.strip
 
     # execute script
     $log.info "[#{script}] executing #{script} #{args} #{filepath}"
-    output = %x(#{Xenuti::SCRIPTS[script]} #{args.strip} #{filepath})
+    output = %x(#{Xenuti::SCRIPTS[script]} #{args} #{filepath})
     $log.info "[#{script}] finished."
 
     # parse (hopefully) JSON output

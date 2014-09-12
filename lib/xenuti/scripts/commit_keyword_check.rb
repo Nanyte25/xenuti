@@ -25,7 +25,6 @@ class Commit
     @diff = ''
     parse_message_diff(string)
     @diff_added = parse_diff_added(@diff)
-    $stderr.puts "Commit #{@id} diff: #{@diff_added}\n#{'=' * 20}"
   end
 
   private
@@ -77,6 +76,10 @@ optparse = OptionParser.new do |options|
              'Keyword to search for in commit`s author field') do |keyword|
     opts[:author] << keyword
   end
+
+  options.on('-i', '--case-insensitive', 'Case insensitive match') do
+    opts[:case_insensitive] = true
+  end
 end
 
 optparse.parse!
@@ -105,25 +108,43 @@ output.split(/(?<=\n)commit/).each do |commit_plain|
   commit = Commit.new(commit_plain)
   matched_keyword = nil
 
-  case
-  when opts[:keyword].any? { |k| commit_plain.match k }
-    matched_keyword = opts[:keyword].select do |k|
-      commit.author.match(k) ||
-      commit.diff_added.match(k) ||
-      commit.message.match(k)
+  # Given keywords and inputs, returns keyword which matches any of the inputs
+  select_matched_keyword = lambda do |keywords, inputs|
+    keywords.select do |keyword|
+      if opts[:case_insensitive]
+        regex = Regexp.new keyword, Regexp::IGNORECASE
+      else
+        regex = Regexp.new keyword
+      end
+      inputs.any? { |i| i.match(regex) }
     end.first
-
-  when opts[:author].any? { |a| commit.author.match a }
-    matched_keyword = opts[:author].select { |k| commit.author.match k }.first
-
-  when opts[:diff].any? { |d| commit.diff.match d }
-    matched_keyword = opts[:diff].select { |k| commit.diff_added.match k }.first
   end
 
-  if matched_keyword
+  matched_keyword = select_matched_keyword.call(opts[:keyword], [commit.author, 
+    commit.diff_added, commit.message])
+
+  matched_author = select_matched_keyword.call(opts[:author], [commit.author])
+
+  matched_diff = select_matched_keyword.call(opts[:diff], [commit.diff_added])
+
+  msg = nil
+  case 
+  when matched_keyword
     msg = {
-      trigger: "Commit matched keyword \"#{matched_keyword}\"",
-      commit: commit.id, author: commit.author, date: commit.date }
+      trigger: "Commit matched keyword \"#{matched_keyword}\""}
+
+  when matched_author
+    msg = {
+      trigger: "Commit's author matched \"#{matched_author}\""}
+
+  when matched_diff
+    msg = {
+      trigger: "Commit's diff matched keyword \"#{matched_diff}\""}
+
+  end
+
+  unless msg.nil?
+    msg.merge!(commit: commit.id, author: commit.author, date: commit.date)
     if fetch_url.match(/github.com/)
       msg[:URL] =  URI.join(fetch_url.to_s + '/', 'commit/', commit.id)
     end

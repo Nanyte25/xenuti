@@ -53,7 +53,8 @@ class Commit
   end
 end
 
-opts = { keyword: [], author: [], diff: [] }
+opts = {'keyword' => [], 'author' => [], 'diff' => [],
+  'case_insensitive' => false }
 
 optparse = OptionParser.new do |options|
 
@@ -64,21 +65,25 @@ optparse = OptionParser.new do |options|
 
   options.on('-k', '--keyword KEYWORD',
              'Keyword to search for in commits') do |keyword|
-    opts[:keyword] << keyword
+    opts['keyword'] << keyword
   end
 
   options.on('-d', '--diff-keyword KEYWORD',
              'Keyword to search for in commit`s diff') do |keyword|
-    opts[:diff] << keyword
+    opts['diff'] << keyword
   end
 
   options.on('-a', '--author-keyword KEYWORD',
              'Keyword to search for in commit`s author field') do |keyword|
-    opts[:author] << keyword
+    opts['author'] << keyword
   end
 
   options.on('-i', '--case-insensitive', 'Case insensitive match') do
-    opts[:case_insensitive] = true
+    opts['case_insensitive'] = true
+  end
+
+  options.on('-f', '--config-file FILE', 'Path to file with JSON config') do |f|
+    opts['config_file'] = f
   end
 end
 
@@ -89,6 +94,19 @@ if gitrepo.nil?
   $stderr.puts 'Please supply path to a git repo.'
   exit(1)
 end
+
+# When config file was supplied, load it and override all opts.
+if opts['config_file']
+  begin
+    opts = opts.merge JSON.load IO.read opts['config_file']
+  rescue Exception => e
+    $stderr.puts e
+    exit(1)
+  end
+end
+
+
+$stderr.puts opts.inspect 
 
 messages = Set.new
 
@@ -111,7 +129,7 @@ output.split(/(?<=\n)commit/).each do |commit_plain|
   # Given keywords and inputs, returns keyword which matches any of the inputs
   select_matched_keyword = lambda do |keywords, inputs|
     keywords.select do |keyword|
-      if opts[:case_insensitive]
+      if opts['case_insensitive']
         regex = Regexp.new keyword, Regexp::IGNORECASE
       else
         regex = Regexp.new keyword
@@ -120,12 +138,12 @@ output.split(/(?<=\n)commit/).each do |commit_plain|
     end.first
   end
 
-  matched_keyword = select_matched_keyword.call(opts[:keyword], [commit.author, 
+  matched_keyword = select_matched_keyword.call(opts['keyword'], [commit.author, 
     commit.diff_added, commit.message])
 
-  matched_author = select_matched_keyword.call(opts[:author], [commit.author])
+  matched_author = select_matched_keyword.call(opts['author'], [commit.author])
 
-  matched_diff = select_matched_keyword.call(opts[:diff], [commit.diff_added])
+  matched_diff = select_matched_keyword.call(opts['diff'], [commit.diff_added])
 
   msg = nil
   case 

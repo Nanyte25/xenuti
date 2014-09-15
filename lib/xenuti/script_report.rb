@@ -61,12 +61,14 @@ class Xenuti::ScriptReport < Hash
   end
 
   def formatted_header_diffed_with
-    <<-EOF.unindent
+    h = <<-EOF.unindent
       [diffed with]
       start time:     #{old_report.start_time}
-      revision:       #{old_report.revision}
-
     EOF
+    if old_report[:revision]
+      h <<  "revision:       #{old_report.revision}"
+    end
+    h << "\n"
   end
 
   def formatted_header_diff_msg
@@ -107,16 +109,15 @@ class Xenuti::ScriptReport < Hash
   # rubocop:enable MethodLength
 
   def diff!(old_report)
-    if old_report.nil? || old_report.messages.nil? || old_report.scan_info.nil?
+    if old_report.nil? || old_report[:messages].nil? || 
+      old_report[:scan_info].nil? || old_report[:scan_info][:start_time].nil?
       $log.error 'Diffing with old report failed: old report possibly malformed'
       return self
     end
 
     self[:new_messages] = messages - old_report.messages
     self[:fixed_messages] = old_report.messages - messages
-    if old_report.scan_info[:start_time]
-      self.old_report[:start_time] = old_report.scan_info[:start_time]
-    end
+    self.old_report[:start_time] = old_report.scan_info[:start_time]
     if old_report.scan_info[:revision]
       self.old_report[:revision] = old_report.scan_info[:revision]
     end

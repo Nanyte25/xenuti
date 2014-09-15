@@ -114,8 +114,12 @@ class Xenuti::ScriptReport < Hash
 
     self[:new_messages] = messages - old_report.messages
     self[:fixed_messages] = old_report.messages - messages
-    self.old_report[:start_time] = old_report.scan_info.start_time
-    self.old_report[:revision] = old_report.scan_info.revision
+    if old_report.scan_info[:start_time]
+      self.old_report[:start_time] = old_report.scan_info[:start_time]
+    end
+    if old_report.scan_info[:revision]
+      self.old_report[:revision] = old_report.scan_info[:revision]
+    end
     self
   end
 

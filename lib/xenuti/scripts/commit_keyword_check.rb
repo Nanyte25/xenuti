@@ -125,14 +125,15 @@ output.split(/(?<=\n)commit/).each do |commit_plain|
 
   # Given keywords and inputs, returns keyword which matches any of the inputs
   select_matched_keyword = lambda do |keywords, inputs|
-    keywords.select do |keyword|
+    match = keywords.select do |keyword|
       if opts['case_insensitive']
         regex = Regexp.new keyword, Regexp::IGNORECASE
       else
         regex = Regexp.new keyword
       end
       inputs.any? { |i| i.match(regex) }
-    end.first
+    end.join(', ')
+    match.empty? ? nil : match
   end
 
   matched_keyword = select_matched_keyword.call(opts['keyword'], [commit.author, 
@@ -146,7 +147,7 @@ output.split(/(?<=\n)commit/).each do |commit_plain|
   case 
   when matched_keyword
     msg = {
-      trigger: "Commit matched keyword \"#{matched_keyword}\""}
+      trigger: "Commit matched keyword: \"#{matched_keyword}\""}
 
   when matched_author
     msg = {
@@ -154,7 +155,7 @@ output.split(/(?<=\n)commit/).each do |commit_plain|
 
   when matched_diff
     msg = {
-      trigger: "Commit's diff matched keyword \"#{matched_diff}\""}
+      trigger: "Commit's diff matched keyword: \"#{matched_diff}\""}
 
   end
 

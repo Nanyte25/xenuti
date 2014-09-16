@@ -68,6 +68,7 @@ class Xenuti::Config < Hash
         diff: false           # Diff mode - include only new warnings in report
         relative_path: ['']   # Relative path(s) to dir within repository
         diff_ignore: []       # Which message fields to ignore during diff
+        sort_field:           # Name of field on which messages will be sorted
 
     report:
       send_mail: false        # Enable to send report via mail

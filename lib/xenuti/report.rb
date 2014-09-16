@@ -108,7 +108,7 @@ class Xenuti::Report < Hash
   def formatted(config)
     report = formatted_header(config)
     script_reports.each do |script_report|
-      report << script_report.formatted + "\n"
+      report << script_report.formatted(config) + "\n"
     end
     report
   end

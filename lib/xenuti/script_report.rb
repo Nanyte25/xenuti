@@ -14,6 +14,12 @@ class Xenuti::ScriptReport < Hash
   include HashWithMethodAccess
   include HashWithConstraints
 
+  def self.sort_messages(field, messages)
+    return messages if messages.any? {|message| !message.is_a? Hash }
+    return messages if messages.any? { |message| message[field].nil? }
+    return messages.sort_by { |message| message[field]}
+  end
+
   def initialize
     self[:scan_info] = {
       start_time: nil, end_time: nil, duration: nil, script_name: nil,
@@ -24,9 +30,9 @@ class Xenuti::ScriptReport < Hash
     self[:messages] = []
   end
 
-  def formatted
+  def formatted(config)
     report = formatted_header
-    report << formatted_messages unless scan_info[:exception]
+    report << formatted_messages(config) unless scan_info[:exception]
     report
   end
 
@@ -78,12 +84,17 @@ class Xenuti::ScriptReport < Hash
     EOF
   end
 
-  def formatted_messages
+  def formatted_messages(config)
     output = ''
     warns_to_print = diffed? ? new_messages : messages
     if warns_to_print.size == 0
       output << "No messages.\n"
     else
+      sort_field = config[:process][scan_info.script_name][:sort_field]
+      $log.warn sort_field
+      if(sort_field)
+        warns_to_print = Xenuti::ScriptReport.sort_messages(sort_field, warns_to_print)
+      end
       output << warns_to_print.map{|m| format_message(m)}.join("\n" + '-'*55 + "\n\n")
     end
     output

@@ -17,14 +17,14 @@ class Commit
   attr_reader :id, :author, :message, :diff, :diff_added, :date
   attr_accessor :trigger
 
-  def initialize(string)
+  def initialize(string, exclude=[])
     @id = string.match(/[a-f0-9]+/).to_s
     @author = string.match(/(?<=Author: )[^\n]*/).to_s
     @date = string.match(/(?<=Date:   )[^\n]*/).to_s
     @message = ''
     @diff = ''
     parse_message_diff(string)
-    @diff_added = parse_diff_added(@diff)
+    @diff_added = parse_diff_added(@diff, exclude)
   end
 
   private
@@ -47,14 +47,18 @@ class Commit
     @message = "\n" + message
   end
 
-  # Given full diff, filter out only lines added 
-  def parse_diff_added(diff)
-    diff.lines.select {|l| l.match /^\+[^+].*/}.join
+  # Given full diff, filter out only lines added and exclude files which match
+  # given regexps
+  def parse_diff_added(diff, exclude)
+    ary = diff.split('diff')
+    ary = ary.delete_if {|d| d.empty? }
+    ary = ary.delete_if {|d| exclude.any? {|r| d.lines.first.match Regexp.new(r)}}
+    ary.join("\n").lines.select {|l| l.match /^\+[^+].*/}.join
   end
 end
 
 opts = {'keyword' => [], 'author' => [], 'diff' => [],
-  'case_insensitive' => false }
+  'case_insensitive' => false, 'exclude' => [] }
 
 optparse = OptionParser.new do |options|
 
@@ -84,6 +88,10 @@ optparse = OptionParser.new do |options|
 
   options.on('-f', '--config-file FILE', 'Path to file with JSON config') do |f|
     opts['config_file'] = f
+  end
+
+  options.on('-e', '--exclude REGEX', 'Regex to match files to exclude') do |r|
+    opts['exclude'] << r
   end
 end
 
@@ -120,7 +128,7 @@ ensure
 end
 
 output.split(/(?<=\n)commit/).each do |commit_plain|
-  commit = Commit.new(commit_plain)
+  commit = Commit.new(commit_plain, opts['exclude'])
   matched_keyword = nil
 
   # Given keywords and inputs, returns keyword which matches any of the inputs

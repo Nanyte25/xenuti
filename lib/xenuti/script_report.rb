@@ -119,15 +119,29 @@ class Xenuti::ScriptReport < Hash
   end
   # rubocop:enable MethodLength
 
-  def diff!(old_report)
+  def diff!(old_report, ignore_fields=[])
     if old_report.nil? || old_report[:messages].nil? || 
-      old_report[:scan_info].nil? || old_report[:scan_info][:start_time].nil?
+        old_report[:scan_info].nil? || old_report[:scan_info][:start_time].nil?
       $log.error 'Diffing with old report failed: old report possibly malformed'
       return self
     end
 
-    self[:new_messages] = messages - old_report.messages
-    self[:fixed_messages] = old_report.messages - messages
+    self[:new_messages] = messages.select do |msg_new|
+      old_report.messages.all? do |msg_old|
+        (msg_new.keys - ignore_fields).any? do |k|
+          msg_new[k] != msg_old[k]
+        end
+      end
+    end
+
+    self[:fixed_messages] = old_report.messages.select do |msg_old|
+      self.messages.all? do |msg_new|
+        (msg_old.keys - ignore_fields).any? do |k|
+          msg_old[k] != msg_new[k]
+        end
+      end
+    end
+
     self.old_report[:start_time] = old_report.scan_info[:start_time]
     if old_report.scan_info[:revision]
       self.old_report[:revision] = old_report.scan_info[:revision]

@@ -162,7 +162,7 @@ class Xenuti::Report < Hash
       if config[:process][script_name][:diff]
         relpath = new_sr.scan_info.relpath
         old_sr = Xenuti::Report.find_script_report(old, script_name, relpath)
-        new_sr.diff!(old_sr)
+        new_sr.diff!(old_sr, config[:process][script_name][:diff_ignore])
       end
     end
     self

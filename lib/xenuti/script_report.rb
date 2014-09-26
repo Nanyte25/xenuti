@@ -126,6 +126,8 @@ class Xenuti::ScriptReport < Hash
       return self
     end
 
+    ignore_fields = [ignore_fields] if ignore_fields.is_a? String
+
     self[:new_messages] = messages.select do |msg_new|
       old_report.messages.all? do |msg_old|
         (msg_new.keys - ignore_fields).any? do |k|

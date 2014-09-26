@@ -12,8 +12,8 @@ describe Xenuti::ScriptReport do
   let(:both_warn) { { name: :a, msg: 'both' } }
   let(:new_warn) { { name: :b, msg: 'New warning' } }
   let(:old_warn) { { name: :c, msg: 'Fixed warning' } }
-  let(:ignored_old) { { name: :d, ignore_field: 'Old report' } }
-  let(:ignored_new) { { name: :d, ignore_field: 'New report' } }
+  let(:ignored_old) { { name: :d, 'ignore_field' => 'Old report' } }
+  let(:ignored_new) { { name: :d, 'ignore_field' => 'New report' } }
 
   let(:new_report) do
     new_report = Xenuti::ScriptReport.new
@@ -40,10 +40,32 @@ describe Xenuti::ScriptReport do
       expect([:a, :b].include? new_report.messages[1][:name]).to be_true
     end
 
-    it 'should ignore fields when specified' do
-      new_report.diff!(old_report, [:foo, :ignore_field, :bar])
-      expect(new_report.new_messages).to be_eql([new_warn])
-      expect(new_report.fixed_messages).to be_eql([old_warn])
+    it 'should ignore fields when specified as array' do
+      new_report.diff!(old_report, [:foo, 'ignore_field', :bar])
+
+      # new_messages contain new_warn
+      expect(new_report.new_messages.size).to be_eql(1)
+      expect(new_report.new_messages.first[:name]).to be_eql(:b)
+
+      # fixed_messages containt old_warn
+      expect(new_report.fixed_messages.size).to be_eql(1)
+      expect(new_report.fixed_messages.first[:name]).to be_eql(:c)
+
+      expect([:a, :b].include? new_report.messages[0][:name]).to be_true
+      expect([:a, :b].include? new_report.messages[1][:name]).to be_true
+    end
+
+    it 'should ignore field when specified as string' do
+      new_report.diff!(old_report, 'ignore_field')
+
+      # new_messages contain new_warn
+      expect(new_report.new_messages.size).to be_eql(1)
+      expect(new_report.new_messages.first[:name]).to be_eql(:b)
+
+      # fixed_messages containt old_warn
+      expect(new_report.fixed_messages.size).to be_eql(1)
+      expect(new_report.fixed_messages.first[:name]).to be_eql(:c)
+
       expect([:a, :b].include? new_report.messages[0][:name]).to be_true
       expect([:a, :b].include? new_report.messages[1][:name]).to be_true
     end

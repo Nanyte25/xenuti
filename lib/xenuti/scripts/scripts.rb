@@ -8,7 +8,8 @@ module Xenuti
   SCRIPTS = {
     brakeman: 'brakeman.rb',
     commit_keyword_check: 'commit_keyword_check.rb',
-    flaws_check: 'flaws_check.rb'
+    flaws_check: 'flaws_check.rb',
+    selinux_cwe_warning: 'selinux_cwe_warning.rb'
   }
 
   scripts_folder = File.dirname(__FILE__)

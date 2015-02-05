@@ -54,6 +54,7 @@ class Xenuti::Config < Hash
       name:                   # Name of the project to scan - appears in report
       workdir:                # Working directory for Xenuti - holds reports,
                               # sources.. Don't change in diff mode between runs
+      scriptdir:              # Directory with custom scripts
       quiet: false            # Suppress output
       loglevel: warn          # One of: fatal, error, warn, info, debug
 

@@ -18,11 +18,27 @@ describe Xenuti::Processor do
   end
   let(:processor) { Xenuti::Processor.new(config) }
 
-  context '#content_update' do
+  context '::content_update' do
     it 'should check out the code from repo to source directory' do
-      processor.content_update(Xenuti::Report.new)
+      Xenuti::Processor.content_update(config, Xenuti::Report.new)
       expect(Dir.compare(ALPHA_REPO, config[:content_update][:source])).to \
         be_true
+    end
+  end
+
+  context '::map_script_names_to_paths' do
+    let(:map) { Xenuti::Processor.map_script_names_to_paths(config) }
+
+    it 'should return a hash' do
+      expect(map).to be_a Hash
+    end
+
+    it 'should discover scripts bundled with Xenuti' do
+      expect(map[:brakeman]).not_to be_nil
+    end
+
+    it 'should discover scripts in custom scripts directory' do
+      expect(map[:dummy_check]).not_to be_nil
     end
   end
 

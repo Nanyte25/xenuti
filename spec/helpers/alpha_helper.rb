@@ -18,6 +18,7 @@ require 'fileutils'
 
 ALPHA_REPO = Dir.mktmpdir
 ALPHA_WORKDIR = Dir.mktmpdir
+ALPHA_SCRIPTDIR = Dir.mktmpdir
 ALPHA_CONFIG = FIXTURES + '/alpha_config.yml'
 
 FileUtils.cp_r(FIXTURES + '/alpha/.', ALPHA_REPO)
@@ -27,12 +28,27 @@ Dir.chdir(ALPHA_REPO)
 %x(git init; git add -f *; git add .gitignore; git commit -m "Initial commit.")
 Dir.chdir(old_pwd)
 
+# Create a dummy custom script
+File.open(File.join(ALPHA_SCRIPTDIR, 'dummy_check.rb'), 'w+') do |file|
+  file.write <<-EOF.unindent
+    #!/usr/bin/env ruby
+
+    require 'json'
+
+    puts JSON.dump [{'message' => 'terrible warning', 'reason' => 'foo'}]
+  EOF
+end
+
+# make the script executable
+File.chmod(0744, File.join(ALPHA_SCRIPTDIR, 'dummy_check.rb'))
+
 File.open(ALPHA_CONFIG, 'w+') do |file|
   file.write <<-EOF.unindent
     ---
     general:
       name: Alpha
       workdir: #{ALPHA_WORKDIR}
+      scriptdir: #{ALPHA_SCRIPTDIR}
       quiet: true
       diff: false
 
@@ -41,6 +57,9 @@ File.open(ALPHA_CONFIG, 'w+') do |file|
 
     process:
       brakeman:
+        args:
+
+      dummy_check:
         args:
 
     report:

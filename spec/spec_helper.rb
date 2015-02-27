@@ -14,6 +14,8 @@ RSpec.configure do |config|
   config.formatter = :documentation
 end
 
+XENUTI_P = File.join(File.dirname(__FILE__), '../bin/xenuti')
+
 FIXTURES = File.expand_path('../fixtures', __FILE__)
 CONFIG_FILEPATH = File.join(FIXTURES, '/config.yml')
 

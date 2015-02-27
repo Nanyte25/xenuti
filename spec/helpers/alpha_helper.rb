@@ -19,7 +19,8 @@ require 'fileutils'
 ALPHA_REPO = Dir.mktmpdir
 ALPHA_WORKDIR = Dir.mktmpdir
 ALPHA_SCRIPTDIR = Dir.mktmpdir
-ALPHA_CONFIG = FIXTURES + '/alpha_config.yml'
+ALPHA_BACKENDDIR = Dir.mktmpdir
+ALPHA_CONFIG = File.join(FIXTURES, '/alpha_config.yml')
 
 FileUtils.cp_r(FIXTURES + '/alpha/.', ALPHA_REPO)
 
@@ -27,6 +28,24 @@ old_pwd = Dir.pwd
 Dir.chdir(ALPHA_REPO)
 %x(git init; git add -f *; git add .gitignore; git commit -m "Initial commit.")
 Dir.chdir(old_pwd)
+
+# Create a dummy backend script
+File.open(File.join(ALPHA_BACKENDDIR, 'dummy_backend.rb'), 'w+') do |file|
+  file.write <<-EOF.unindent
+    #!/usr/bin/env ruby
+
+    require 'json'
+    require 'tempfile'
+
+    file = Tempfile.new('foo')
+    file.write("hello world")
+
+    puts JSON.dump {'source' => file.path, 'backend' => 'dummy_backend'}
+  EOF
+end
+
+# make the script executable
+File.chmod(0744, File.join(ALPHA_BACKENDDIR, 'dummy_backend.rb'))
 
 # Create a dummy custom script
 File.open(File.join(ALPHA_SCRIPTDIR, 'dummy_check.rb'), 'w+') do |file|
@@ -49,11 +68,17 @@ File.open(ALPHA_CONFIG, 'w+') do |file|
       name: Alpha
       workdir: #{ALPHA_WORKDIR}
       scriptdir: #{ALPHA_SCRIPTDIR}
+      backenddir: #{ALPHA_BACKENDDIR}
       quiet: true
       diff: false
 
     content_update:
-      repo: #{ALPHA_REPO}
+      git:
+        args: >
+          --repository #{ALPHA_REPO}
+
+      dummy_backend:
+        args: 
 
     process:
       brakeman:

@@ -42,7 +42,7 @@ require 'ruby_util/string'
 
 class Xenuti::Config < Hash
   # include HashWithMethodAccess
-  include HashWithConstraints
+  # include HashWithConstraints
 
   # This annotated config is returned by 'xenuti generate_config'. To avoid
   # repetition and necessity to keep two places synchronized and up-to-date, it
@@ -55,12 +55,13 @@ class Xenuti::Config < Hash
       workdir:                # Working directory for Xenuti - holds reports,
                               # sources.. Don't change in diff mode between runs
       scriptdir:              # Directory with custom scripts
+      backenddir:             # Directory with custom backends
       quiet: false            # Suppress output
       loglevel: warn          # One of: fatal, error, warn, info, debug
 
     content_update:
-      backend: git            # Choose from [git, bugzilla_flaws]
-      repo:                   # Path to Git repository (URL)
+      backend:                # name of the backend
+      args:                   # Command line arguments passed to script
 
     process:
       myscript.sh:
@@ -102,12 +103,15 @@ class Xenuti::Config < Hash
     self[:report] ||= {}
 
     self[:general].soft_merge! DEFAULT_CONFIG[:general]
-    self[:content_update].soft_merge! DEFAULT_CONFIG[:content_update]
+
     self[:report].soft_merge! DEFAULT_CONFIG[:report]
 
-    self[:process].each do |_script, script_cfg|
+    self[:process].each do |script, script_cfg|
       script_cfg.soft_merge! DEFAULT_CONFIG[:process][:'myscript.sh']
     end
+
+    self[:process] = Hash[self[:process].map {|k,v| [k.to_s, v]}]
+
     self
   end
 end

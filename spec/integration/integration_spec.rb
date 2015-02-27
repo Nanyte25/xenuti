@@ -12,8 +12,6 @@ require 'spec_helper'
 require 'tempfile'
 require 'fileutils'
 
-XENUTI_P = File.join(File.dirname(__FILE__), '../../bin/xenuti')
-
 describe 'Integration Tests' do
 
   context 'Custom backend, custom script, diff report' do

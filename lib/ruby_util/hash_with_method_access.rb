@@ -6,23 +6,23 @@
 
 module HashWithMethodAccess
   def [](key)
-    key = key.to_sym if key.is_a? String
+    key = key.to_s if key.is_a? Symbol
     super(key)
   end
 
   def []=(key, val)
-    key = key.to_sym if key.is_a? String
+    key = key.to_s if key.is_a? Symbol
     # val = self.class.new(val) if val.is_a? Hash
     val.extend(HashWithMethodAccess) if val.is_a? Hash
     super(key, val)
   end
 
   def merge(other)
-    super(other.deep_symbolize_keys)
+    super(other.deep_stringify_keys)
   end
 
   def merge!(other)
-    super(other.deep_symbolize_keys)
+    super(other.deep_stringify_keys)
   end
 
   # rubocop:disable NonNilCheck

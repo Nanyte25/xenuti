@@ -46,7 +46,7 @@ require 'date'
 # use #verify method.
 class Xenuti::Report < Hash
   include HashWithMethodAccess
-  include HashWithConstraints
+  # include HashWithConstraints
 
   REPORT_NAME = 'report.yml'
 
@@ -66,7 +66,7 @@ class Xenuti::Report < Hash
     latest = nil
     reportfiles.each do |reportfile|
       report = load(reportfile)
-      latest = report[:scan_info][:start_time] > latest_time ? report : latest
+      latest = report.scan_info.start_time > latest_time ? report : latest
       latest_time = latest.scan_info.start_time
     end
     latest
@@ -85,8 +85,8 @@ class Xenuti::Report < Hash
   end
 
   def initialize
-    self[:scan_info] = { version: Xenuti::Version }
-    self[:script_reports] = []
+    self['scan_info'] = { 'version' => Xenuti::Version }
+    self['script_reports'] = []
     @diffed = false
   end
 
@@ -107,7 +107,7 @@ class Xenuti::Report < Hash
   # Returns plaintext pretty-formatted version of a report.
   def formatted(config)
     report = formatted_header(config)
-    script_reports.each do |script_report|
+    self['script_reports'].each do |script_report|
       report << script_report.formatted(config) + "\n"
     end
     report
@@ -126,9 +126,9 @@ class Xenuti::Report < Hash
 
   def formatted_header_scan_info
     <<-EOF.unindent
-    version:    #{scan_info.version}
-    start time: #{scan_info.start_time}
-    end time:   #{scan_info.end_time}
+    version:    #{self['scan_info']['version']}
+    start time: #{self['scan_info']['start_time']}
+    end time:   #{self['scan_info']['end_time']}
     duration:   #{duration} s
     EOF
   end
@@ -146,7 +146,7 @@ class Xenuti::Report < Hash
   end
 
   def duration
-    (scan_info.end_time - scan_info.start_time).round(2)
+    (self.scan_info.end_time - self.scan_info.start_time).round(2)
   end
 
   # Returns new report, which is a result of calculating difference of two other

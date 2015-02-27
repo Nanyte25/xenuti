@@ -111,7 +111,7 @@ class Xenuti::Processor
 
       until e_eof
         err = e.gets.strip
-        $log.info(backend_name) { err }
+        $log.info(script_name) { err }
         begin
           Timeout::timeout(5) { e_eof = e.eof? }
         rescue Timeout::Error

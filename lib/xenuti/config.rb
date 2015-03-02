@@ -42,7 +42,7 @@ require 'ruby_util/string'
 
 class Xenuti::Config < Hash
   # include HashWithMethodAccess
-  # include HashWithConstraints
+  include HashWithConstraints
 
   # This annotated config is returned by 'xenuti generate_config'. To avoid
   # repetition and necessity to keep two places synchronized and up-to-date, it

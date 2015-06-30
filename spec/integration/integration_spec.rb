@@ -23,7 +23,7 @@ describe 'Integration Tests' do
       File.open(@config, 'w+') do |file|
         file.write <<-EOF.unindent
           ---
-          general:  
+          general:
             name: integration
             workdir: #{@workdir}
             scriptdir: #{CUSTOM_SCRIPTDIR}
@@ -48,10 +48,13 @@ describe 'Integration Tests' do
       %x(#{XENUTI_P} run #{@config.path} --trace)
       %x(#{XENUTI_P} run #{@config.path} --trace)
 
-      # find report and log files
-      # for some reason newer one is always listed first
-      report_file = Dir.glob(File.join(@workdir,"**/report.yml"))[0]
-      logfile = Dir.glob(File.join(@workdir,"**/xenuti.log"))[0]
+      # choose the newest report directory
+      report_dir = Dir.glob(File.join(@workdir,"reports/*")).sort do |x,y|
+        File.stat(x).mtime <=> File.stat(y).mtime
+      end.last
+
+      report_file = File.join(report_dir,"report.yml")
+      logfile = File.join(report_dir,"xenuti.log")
       @report = YAML.load(IO.read(report_file), safe: false)
       @logs = IO.read logfile
     end

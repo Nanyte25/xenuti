@@ -7,4 +7,4 @@ $LOAD_PATH.unshift File.expand_path('../lib', __FILE__)
 RSpec::Core::RakeTask.new
 
 # :rubocop task
-Rubocop::RakeTask.new
+# Rubocop::RakeTask.new

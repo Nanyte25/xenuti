@@ -167,4 +167,12 @@ class Xenuti::Report < Hash
     end
     self
   end
+
+  def empty?
+    empty = true
+    script_reports.each do |script_report|
+      empty = false if !script_report.empty?
+    end
+    empty
+  end
 end

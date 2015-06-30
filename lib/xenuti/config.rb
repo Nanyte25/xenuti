@@ -74,6 +74,7 @@ class Xenuti::Config < Hash
 
     report:
       send_mail: false        # Enable to send report via mail
+      skip_empty: false       # Skip sending if the report is empty
       from:                   # From mail address
       to:                     # Destination - either mail address or array of
                               # mail addresses to send report to.

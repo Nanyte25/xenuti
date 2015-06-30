@@ -36,7 +36,7 @@ class Xenuti::Processor
 
       # The goal of following is to stream output from stderr of the script
       # to out logger. We could just check: until e.eof? ... but trouble is
-      # eof? method might block. To get around this we execute e.eof? with 
+      # eof? method might block. To get around this we execute e.eof? with
       # timeout and assume end of file when timeout expires (e.eof? blocked)
       e_eof = nil
       begin
@@ -54,7 +54,7 @@ class Xenuti::Processor
           e_eof = true
         end
       end
-      
+
       json_out = o.read
     end
 
@@ -100,7 +100,7 @@ class Xenuti::Processor
 
       # The goal of following is to stream output from stderr of the script
       # to out logger. We could just check: until e.eof? ... but trouble is
-      # eof? method might block. To get around this we execute e.eof? with 
+      # eof? method might block. To get around this we execute e.eof? with
       # timeout and assume end of file when timeout expires (e.eof? blocked)
       e_eof = nil
       begin
@@ -191,7 +191,7 @@ class Xenuti::Processor
     script_crawl = []
     script_crawl << File.join(File.dirname(__FILE__), 'scripts')
     if !general[:scriptdir].nil? && Dir.exist?(general[:scriptdir])
-      script_crawl << general[:scriptdir] 
+      script_crawl << general[:scriptdir]
     end
 
     # Array of directories to crawl looking for backends
@@ -258,15 +258,15 @@ class Xenuti::Processor
     result
   end
 
-
-
   def output_results(report)
     report.diff!(config, Xenuti::Report.prev_report(config)) \
       if Xenuti::Report.prev_report(config)
     formatted = report.formatted(config)
     puts formatted unless config[:general][:quiet]
     if config[:report][:send_mail]
-      Xenuti::ReportSender.new(config).send(formatted)
+      if !config[:report][:skip_empty] || !report.empty?
+        Xenuti::ReportSender.new(config).send(formatted)
+      end
     end
     report
   end

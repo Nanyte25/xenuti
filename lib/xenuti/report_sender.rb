@@ -36,7 +36,7 @@ class Xenuti::ReportSender
   # rubocop:enable MethodLength
   # rubocop:enable CyclomaticComplexity
 
-  def send(report_content)
+  def send(report_content)    
     options = { address: config[:report][:server], \
                 port: config[:report][:port] }
     if config[:report][:to].is_a?(Array)

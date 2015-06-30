@@ -21,8 +21,8 @@ class Xenuti::ScriptReport < Hash
 
   def initialize
     self['scan_info'] = {
-      'start_time' => nil, 'end_time' => nil, 'script_name' => nil, 
-      'version' => nil, 'exception' => nil, 'relpath' => '', 
+      'start_time' => nil, 'end_time' => nil, 'script_name' => nil,
+      'version' => nil, 'exception' => nil, 'relpath' => '',
       'mode' => 'full report', 'args' => nil, 'revision' => nil }
 
     self['old_report'] = {}
@@ -120,7 +120,7 @@ class Xenuti::ScriptReport < Hash
   # rubocop:enable MethodLength
 
   def diff!(old_report, ignore_fields=[])
-    if old_report.nil? || old_report['messages'].nil? || 
+    if old_report.nil? || old_report['messages'].nil? ||
         old_report['scan_info'].nil? || old_report['scan_info']['start_time'].nil?
       $log.error 'Diffing with old report failed: old report possibly malformed'
       return self
@@ -161,5 +161,10 @@ class Xenuti::ScriptReport < Hash
 
   def duration
     (scan_info.end_time - scan_info.start_time).round(2)
+  end
+
+  def empty?
+    return self['new_messages'].empty? if diffed?
+    return self.messages.empty?
   end
 end

@@ -46,7 +46,6 @@ require 'date'
 # use #verify method.
 class Xenuti::Report < Hash
   include HashWithMethodAccess
-  # include HashWithConstraints
 
   REPORT_NAME = 'report.yml'
 
@@ -59,15 +58,15 @@ class Xenuti::Report < Hash
   # Returns the oldest report that can be found in Xenuti`s workdir, as defined
   # in configuration.
   def self.prev_report(config)
-    search_path = File.join(config[:general][:workdir],
+    search_path = File.join(config['general']['workdir'],
                             '/reports/**/', REPORT_NAME)
     reportfiles = Dir.glob search_path
     latest_time = Time.at(0)
     latest = nil
     reportfiles.each do |reportfile|
       report = load(reportfile)
-      latest = report.scan_info.start_time > latest_time ? report : latest
-      latest_time = latest.scan_info.start_time
+      latest = report['scan_info']['start_time'] > latest_time ? report : latest
+      latest_time = latest['scan_info']['start_time']
     end
     latest
   end
@@ -79,25 +78,23 @@ class Xenuti::Report < Hash
     end.first
   end
 
-  def self.reports_dir(config)
-    timestamp = Time.now.to_datetime.rfc3339
-    @@dir ||= File.join(config[:general][:workdir], 'reports', timestamp)
+  def report_dir(config)
+    return File.join(config['general']['workdir'], 'reports', self['timestamp'])
   end
 
   def initialize
     self['scan_info'] = { 'version' => Xenuti::Version }
     self['script_reports'] = []
-    @diffed = false
+    self['timestamp'] = Time.now.to_datetime.rfc3339
   end
 
   # Retrieve again with Xenuti::Report.load(filename).
   def save(config)
-    reports_dir = Xenuti::Report.reports_dir(config)
-    unless Dir.exist? reports_dir
-      $log.info("Creating report directory #{reports_dir}")
-      FileUtils.mkdir_p reports_dir
+    unless Dir.exist? report_dir(config)
+      $log.info("Creating report directory #{report_dir(config)}")
+      FileUtils.mkdir_p report_dir(config)
     end
-    filename = File.join(reports_dir, REPORT_NAME)
+    filename = File.join(report_dir(config), REPORT_NAME)
     $log.info("Saving Xenuti report to #{filename}")
     File.open(filename, 'w+') do |file|
       file.write(YAML.dump(self))
@@ -135,9 +132,9 @@ class Xenuti::Report < Hash
 
   def formatted_header_config_info(config)
     <<-EOF.unindent
-    name:       #{config[:general][:name]}
-    repo:       #{config[:content_update][:repo]}
-    revision:   #{config[:content_update][:revision]}
+    name:       #{config['general']['name']}
+    repo:       #{config['content_update']['repo']}
+    revision:   #{config['content_update']['revision']}
     EOF
   end
 
@@ -159,10 +156,10 @@ class Xenuti::Report < Hash
   def diff!(config, old)
     script_reports.each do |new_sr|
       script_name = new_sr.scan_info.script_name
-      if config[:process][script_name][:diff]
+      if config['process'][script_name]['diff']
         relpath = new_sr.scan_info.relpath
         old_sr = Xenuti::Report.find_script_report(old, script_name, relpath)
-        new_sr.diff!(old_sr, config[:process][script_name][:diff_ignore])
+        new_sr.diff!(old_sr, config['process'][script_name]['diff_ignore'])
       end
     end
     self

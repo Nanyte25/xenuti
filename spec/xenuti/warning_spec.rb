@@ -5,16 +5,13 @@
 # MIT license.
 
 require 'spec_helper'
-require 'ruby_util/hash_with_method_access_shared'
 
 describe Xenuti::Warning do
   let(:warn) { Xenuti::Warning.from_hash(a: :b) }
 
-  it_behaves_like 'hash with method access', Xenuti::Warning.new
-
   describe '::from_hash' do
     it 'should accept Hash as argument' do
-      expect(warn.a).to be_eql(:b)
+      expect(warn[:a]).to be_eql(:b)
     end
   end
 

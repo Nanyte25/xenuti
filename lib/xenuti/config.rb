@@ -6,7 +6,6 @@
 
 require 'safe_yaml'
 require 'ruby_util/hash'
-require 'ruby_util/hash_with_method_access'
 require 'ruby_util/hash_with_constraints'
 require 'ruby_util/string'
 
@@ -41,7 +40,6 @@ require 'ruby_util/string'
 # use #verify method.
 
 class Xenuti::Config < Hash
-  # include HashWithMethodAccess
   include HashWithConstraints
 
   # This annotated config is returned by 'xenuti generate_config'. To avoid
@@ -64,7 +62,7 @@ class Xenuti::Config < Hash
       args:                   # Command line arguments passed to script
 
     process:
-      myscript.sh:
+      myscript:
         args:                 # Command line arguments passed to script
         abort_on_fail: false  # Abort run if the script fails
         diff: false           # Diff mode - include only new warnings in report
@@ -83,10 +81,10 @@ class Xenuti::Config < Hash
   EOF
 
   DEFAULT_CONFIG = YAML.load(ANNOTATED_DEFAULT_CONFIG, safe: false)
-  DEFAULT_CONFIG.deep_symbolize_keys!
+  DEFAULT_CONFIG.deep_stringify_keys!
 
   def self.from_hash(hash)
-    new.recursive_merge!(hash.deep_symbolize_keys).fill_default_values
+    new.recursive_merge!(hash.deep_stringify_keys).fill_default_values
   end
 
   def self.from_yaml(yaml_string)
@@ -98,20 +96,21 @@ class Xenuti::Config < Hash
   end
 
   def fill_default_values
-    self[:process] ||= {}
-    self[:general] ||= {}
-    self[:content_update] ||= {}
-    self[:report] ||= {}
+    self['process'] ||= {}
+    self['general'] ||= {}
+    self['content_update'] ||= {}
+    self['report'] ||= {}
 
-    self[:general].soft_merge! DEFAULT_CONFIG[:general]
+    self['general'].soft_merge! DEFAULT_CONFIG['general']
 
-    self[:report].soft_merge! DEFAULT_CONFIG[:report]
+    self['report'].soft_merge! DEFAULT_CONFIG['report']
 
-    self[:process].each do |script, script_cfg|
-      script_cfg.soft_merge! DEFAULT_CONFIG[:process][:'myscript.sh']
+    self['process'].each do |script, script_cfg|
+      script_cfg.soft_merge! DEFAULT_CONFIG['process']['myscript']
     end
 
-    self[:process] = Hash[self[:process].map {|k,v| [k.to_s, v]}]
+    # convert script names back to strings
+    # self[:process] = Hash[self[:process].map {|k,v| [k.to_s, v]}]
 
     self
   end

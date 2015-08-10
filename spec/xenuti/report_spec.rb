@@ -34,12 +34,12 @@ describe Xenuti::Report do
       File.open(tmp + '/reports/' + newer + '/report.yml', 'w+') do |file|
         file.write <<-EOF.unindent
         --- !ruby/hash:Xenuti::Report
-        :scan_info:
-          :version: 0.0.1
-          :start_time: 2014-05-30 15:37:04.001 +02:00
-        :scanner_reports: []
-        :config: {}
-        :name: :new
+        scan_info:
+          version: 0.0.1
+          start_time: 2014-05-30 15:37:04.001 +02:00
+        scanner_reports: []
+        config: {}
+        name: :new
         EOF
       end
 
@@ -47,21 +47,21 @@ describe Xenuti::Report do
       File.open(tmp + '/reports/' + older + '/report.yml', 'w+') do |file|
         file.write <<-EOF.unindent
         --- !ruby/hash:Xenuti::Report
-        :scan_info:
-          :version: 0.0.1
-          :start_time: 2014-05-27 15:37:04.002 +02:00
-        :scanner_reports: []
-        :config: {}
-        :name: :old
+        scan_info:
+          version: 0.0.1
+          start_time: 2014-05-27 15:37:04.002 +02:00
+        scanner_reports: []
+        config: {}
+        name: :old
         EOF
       end
 
-      config = Xenuti::Config.from_hash(general: { workdir: tmp })
-      expect(Xenuti::Report.prev_report(config).name).to be_eql(:new)
+      config = Xenuti::Config.from_hash('general' => { 'workdir' => tmp })
+      expect(Xenuti::Report.prev_report(config).name).to eq(:new)
     end
 
     it 'should return nil when directory does not contain any report yet' do
-      config = Xenuti::Config.from_hash(general: { workdir: FIXTURES })
+      config = Xenuti::Config.from_hash('general' => { 'workdir' => FIXTURES })
       expect(Xenuti::Report.prev_report(config)).to be_eql(nil)
     end
   end
@@ -75,20 +75,18 @@ describe Xenuti::Report do
 
   describe '::reports_dir' do
     it 'output should be the same across multiple calls' do
-      config = Xenuti::Config.from_hash(general: { workdir: tmp })
-      reports_dir1 = Xenuti::Report.reports_dir(config)
+      config = Xenuti::Config.from_hash('general' => { 'workdir' => tmp })
+      reports_dir1 = report.report_dir(config)
       sleep 1
-      reports_dir2 = Xenuti::Report.reports_dir(config)
+      reports_dir2 = report.report_dir(config)
       expect(reports_dir1).to be_eql(reports_dir2)
     end
   end
 
   describe '#save and ::load' do
     it 'report should be identical after saving and loading again' do
-      reports_dir = Xenuti::Report.reports_dir(Xenuti::Config.from_hash({}))
-      workdir = reports_dir.split('/').take(3).join('/')
-      config = Xenuti::Config.from_hash(general: { workdir: workdir })
-      report[:config] = config
+      config = Xenuti::Config.from_hash('general' => { 'workdir' => tmp })
+      report['config'] = config
       report.scan_info.start_time = Time.now
       report.save(config)
       latest = Xenuti::Report.prev_report(config)

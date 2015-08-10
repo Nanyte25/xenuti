@@ -17,7 +17,7 @@ describe 'hash with constraints' do
         fail unless self[:a].is_a? Integer
         fail unless self['d'].eql? 3
       end
-      expect(hashc.check).to be_true
+      expect(hashc.check).to be true
     end
 
     it 'should raise error when constraints are not met' do
@@ -37,7 +37,7 @@ describe 'hash with constraints' do
       hashc.constraints do
         fail unless self['d'].eql? 3
       end
-      expect(hashc.check).to be_true
+      expect(hashc.check).to be true
     end
 
     it 'should accept multiple constraints and fail if any is not met' do
@@ -58,7 +58,7 @@ describe 'hash with constraints' do
           fail unless self[:a].is_a? Integer
           fail unless self['d'].eql? 3
         end
-      ).to be_true
+      ).to be true
     end
 
     it 'should raise error when constraints passed are not met' do

@@ -62,35 +62,35 @@ class Xenuti::ScriptReport < Hash
   end
 
   def formatted_header_exception
-    "\nERROR: " + scan_info.exception.message + "\n"
+    "\nERROR: " + self['scan_info']['exception'].message + "\n"
   end
 
   def formatted_header_diffed_with
     h = <<-EOF.unindent
       [diffed with]
-      start time:     #{old_report.start_time}
+      start time:     #{self['old_report']['start_time']}
     EOF
-    if old_report[:revision]
-      h <<  "revision:       #{old_report.revision}"
+    if old_report['revision']
+      h <<  "revision:       #{self['old_report']['revision']}"
     end
     h << "\n"
   end
 
   def formatted_header_diff_msg
     <<-EOF.unindent
-      new messages:   #{new_messages.size}
-      fixed messages: #{fixed_messages.size}
+      new messages:   #{self['new_messages'].size}
+      fixed messages: #{self['fixed_messages'].size}
     EOF
   end
 
   def formatted_messages(config)
     output = ''
-    warns_to_print = diffed? ? new_messages : messages
+    warns_to_print = diffed? ? self['new_messages'] : self['messages']
     if warns_to_print.size == 0
       output << "No messages.\n"
     else
-      script_name = scan_info.script_name
-      sort_field = config[:process][script_name][:sort_field]
+      script_name = self['scan_info']['script_name']
+      sort_field = config['process'][script_name]['sort_field']
       $log.warn sort_field
       if(sort_field)
         warns_to_print = Xenuti::ScriptReport.sort_messages(sort_field, warns_to_print)
@@ -128,28 +128,28 @@ class Xenuti::ScriptReport < Hash
 
     ignore_fields = [ignore_fields] if ignore_fields.is_a? String
 
-    self['new_messages'] = messages.select do |msg_new|
-      old_report.messages.all? do |msg_old|
+    self['new_messages'] = self['messages'].select do |msg_new|
+      old_report['messages'].all? do |msg_old|
         (msg_new.keys - ignore_fields).any? do |k|
           msg_new[k] != msg_old[k]
         end
       end
     end
 
-    self['fixed_messages'] = old_report.messages.select do |msg_old|
-      self.messages.all? do |msg_new|
+    self['fixed_messages'] = old_report['messages'].select do |msg_old|
+      self['messages'].all? do |msg_new|
         (msg_old.keys - ignore_fields).any? do |k|
           msg_old[k] != msg_new[k]
         end
       end
     end
 
-    self.old_report[:start_time] = old_report.scan_info[:start_time]
-    if old_report.scan_info[:revision]
-      self.old_report[:revision] = old_report.scan_info[:revision]
+    self.old_report['start_time'] = old_report['scan_info']['start_time']
+    if old_report['scan_info']['revision']
+      self.old_report['revision'] = old_report['scan_info']['revision']
     end
 
-    self.scan_info.mode = 'diff results'
+    self['scan_info']['mode'] = 'diff results'
 
     self
   end

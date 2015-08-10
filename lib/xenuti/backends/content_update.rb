@@ -1,3 +1,0 @@
-
-module Xenuti::ContentUpdate
-end

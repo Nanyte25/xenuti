@@ -73,12 +73,9 @@ File.open(ALPHA_CONFIG, 'w+') do |file|
       diff: false
 
     content_update:
-      git:
-        args: >
-          --repository #{ALPHA_REPO}
-
-      dummy_backend:
-        args: 
+      backend: git
+      args: >
+        --repository #{ALPHA_REPO}
 
     process:
       brakeman:

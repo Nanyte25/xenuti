@@ -20,15 +20,15 @@ describe Dir do
 
   context 'compare' do
     it 'should return true when comparing the same directories' do
-      expect(Dir.compare(FIXTURES, FIXTURES)).to be_true
-      expect(Dir.compare(FIXTURES, Dir.new(FIXTURES))).to be_true
-      expect(Dir.compare(Dir.new(FIXTURES), FIXTURES)).to be_true
+      expect(Dir.compare(FIXTURES, FIXTURES)).to be true
+      expect(Dir.compare(FIXTURES, Dir.new(FIXTURES))).to be true
+      expect(Dir.compare(Dir.new(FIXTURES), FIXTURES)).to be true
     end
 
     it 'should return false when comparing different directories' do
-      expect(Dir.compare(FIXTURES, FIXTURES + '/../')).to be_false
-      expect(Dir.compare(Dir.new(FIXTURES), FIXTURES + '/../')).to be_false
-      expect(Dir.compare(FIXTURES, Dir.new(FIXTURES + '/../'))).to be_false
+      expect(Dir.compare(FIXTURES, FIXTURES + '/../')).to be false
+      expect(Dir.compare(Dir.new(FIXTURES), FIXTURES + '/../')).to be false
+      expect(Dir.compare(FIXTURES, Dir.new(FIXTURES + '/../'))).to be false
     end
   end
 

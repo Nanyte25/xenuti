@@ -5,11 +5,8 @@
 # MIT license.
 
 require 'ruby_util/hash'
-require 'ruby_util/hash_with_method_access'
-require 'ruby_util/hash_with_constraints'
 
 class Xenuti::Warning < Hash
-  include HashWithMethodAccess
   include Comparable
 
   def self.from_hash(hash)

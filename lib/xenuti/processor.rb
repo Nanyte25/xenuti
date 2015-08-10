@@ -18,16 +18,16 @@ class Xenuti::Processor
 
   # Update the content. Backend is specified in content_update part of config.
   def self.content_update(config, backends_paths)
-    backend_name = config[:content_update][:backend]
+    backend_name = config['content_update']['backend']
     backend_path = backends_paths[backend_name]
-    args = config[:content_update][:args].strip unless config[:content_update][:args].nil?
-    workdir = config[:general][:workdir].strip
+    args = config['content_update']['args'].strip unless config['content_update']['args'].nil?
+    workdir = config['general']['workdir'].strip
 
     # Fail if we don`t know path to the specified backend
     if backend_path.nil?
       $log.error "Path to #{backend_name.inspect} unknown"
       $log.error "Known paths: #{backends_paths.inspect}"
-      xfail("Could not finish content update.")
+      xfail("Could not finish content update.\nPath to #{backend_name.inspect} unknown\nKnown paths: #{backends_paths.inspect}")
     end
 
     $log.info "Executing: #{backend_path} #{args} #{workdir}"
@@ -64,7 +64,7 @@ class Xenuti::Processor
   # rubocop:disable MethodLength
   def self.run_scripts(config, source, report, script_paths)
 
-    config[:process].each do |script, script_cfg|
+    config['process'].each do |script, script_cfg|
       s_path = script_paths[script]
 
       if s_path.nil?
@@ -72,15 +72,15 @@ class Xenuti::Processor
         $log.error "Known paths: #{script_paths.inspect}"
       else
         # handle special case when relative path is just String (convenience)
-        if script_cfg[:relative_path].is_a? String
-          script_cfg[:relative_path] = [script_cfg[:relative_path]]
+        if script_cfg['relative_path'].is_a? String
+          script_cfg['relative_path'] = [script_cfg['relative_path']]
         end
 
-        script_cfg[:relative_path].each do |relpath|
+        script_cfg['relative_path'].each do |relpath|
           fullpath = source
           fullpath = File.join(fullpath, relpath) unless relpath.empty?
           script_report = new_script_report(script, s_path, script_cfg, relpath)
-          execute_script(script, s_path, script_cfg[:args], script_report, fullpath)
+          execute_script(script, s_path, script_cfg['args'], script_report, fullpath)
           report['script_reports'] << script_report
         end
       end
@@ -146,22 +146,15 @@ class Xenuti::Processor
     script_report
   end
 
-  # Creates reports dir if it does not exist yet, NOOP otherwise
-  def self.create_reports_dir_unless_exist(config)
-    reports_dir = Xenuti::Report.reports_dir(config)
-    FileUtils.mkdir_p reports_dir unless Dir.exist?(reports_dir)
-  end
-
   # Initialize $log variable with logger
-  def self.initialize_log(config)
+  def self.initialize_log(config, logfile_path)
     unless $log
-      logfile_path = File.join(Xenuti::Report.reports_dir(config), 'xenuti.log')
 
       # Targets is array of IO objects to write logs to
       targets = [File.new(logfile_path, 'w+')]
 
       # Unless :quiet was set, also write to STDOUT
-      targets << STDOUT unless config[:general][:quiet]
+      targets << STDOUT unless config['general']['quiet']
 
       $log = ::Logger.new(MultiWriteIO.new(*targets))
       $log.formatter = proc do |severity, datetime, progname, msg|
@@ -169,7 +162,7 @@ class Xenuti::Processor
         fmt << " [#{progname}]" unless progname.nil?
         fmt << " #{msg}\n"
       end
-      $log.level = LOG_LEVEL[config[:general][:loglevel]]
+      $log.level = LOG_LEVEL[config['general']['loglevel']]
       at_exit { $log.close }
     end
   end
@@ -184,21 +177,21 @@ class Xenuti::Processor
   #
   # Todo: REFACTOR
   def self.map_names_to_paths(config)
-    map = {:scripts => {}, :backends => {}}
-    general = config[:general]
+    map = {'scripts' => {}, 'backends' => {}}
+    general = config['general']
 
     # Array of directories to crawl looking for scripts
     script_crawl = []
     script_crawl << File.join(File.dirname(__FILE__), 'scripts')
-    if !general[:scriptdir].nil? && Dir.exist?(general[:scriptdir])
-      script_crawl << general[:scriptdir]
+    if !general['scriptdir'].nil? && Dir.exist?(general['scriptdir'])
+      script_crawl << general['scriptdir']
     end
 
     # Array of directories to crawl looking for backends
     backend_crawl = []
     backend_crawl << File.join(File.dirname(__FILE__), 'backends')
-    if !general[:backenddir].nil? && Dir.exist?(general[:backenddir])
-      backend_crawl << general[:backenddir]
+    if !general['backenddir'].nil? && Dir.exist?(general['backenddir'])
+      backend_crawl << general['backenddir']
     end
 
     script_crawl.each do |scripts_dir|
@@ -211,7 +204,7 @@ class Xenuti::Processor
         # drop the file extension
         script_name = file.gsub(/\.[a-z]+$/,'')
 
-        map[:scripts][script_name] = full_file_path
+        map['scripts'][script_name] = full_file_path
       end
     end
 
@@ -225,7 +218,7 @@ class Xenuti::Processor
         # drop the file extension
         script_name = file.gsub(/\.[a-z]+$/,'')
 
-        map[:backends][script_name] = full_file_path
+        map['backends'][script_name] = full_file_path
       end
     end
 
@@ -234,27 +227,34 @@ class Xenuti::Processor
 
   def initialize(config)
     @config = config
+    @report = Xenuti::Report.new
     @names_to_paths = self.class.map_names_to_paths(@config)
-    self.class.create_reports_dir_unless_exist(@config)
-    self.class.initialize_log(@config)
+
+    report_dir = @report.report_dir(config)
+
+    # create report dir if it does not exist
+    FileUtils.mkdir_p report_dir unless Dir.exist? report_dir
+
+    logfile_path = File.join(report_dir, 'xenuti.log')
+    self.class.initialize_log(@config, logfile_path)
   end
 
   def run
-    report = Xenuti::Report.new
-    report['scan_info']['start_time'] = Time.now
+    
+    @report['scan_info']['start_time'] = Time.now
 
-    output_h = self.class.content_update(@config, @names_to_paths[:backends])
+    output_h = self.class.content_update(@config, @names_to_paths['backends'])
     source = output_h['source']
-    self.class.run_scripts(@config, source, report, @names_to_paths[:scripts])
+    self.class.run_scripts(@config, source, @report, @names_to_paths['scripts'])
 
-    report['scan_info']['end_time'] = Time.now
+    @report['scan_info']['end_time'] = Time.now
 
     # It is important to first output results, only then save it. If we saved
     # report first, Xenuti::Report.prev_report would return report we just saved
     # as oldest one, which would make report diffed with itself in diff mode
     # (see output_results method).
-    result = output_results(report)
-    report.save(@config)
+    result = output_results(@report)
+    @report.save(@config)
     result
   end
 
@@ -262,9 +262,9 @@ class Xenuti::Processor
     report.diff!(config, Xenuti::Report.prev_report(config)) \
       if Xenuti::Report.prev_report(config)
     formatted = report.formatted(config)
-    puts formatted unless config[:general][:quiet]
-    if config[:report][:send_mail]
-      if !config[:report][:skip_empty] || !report.empty?
+    puts formatted unless config['general']['quiet']
+    if config['report']['send_mail']
+      if !config['report']['skip_empty'] || !report.empty?
         Xenuti::ReportSender.new(config).send(formatted)
       end
     end

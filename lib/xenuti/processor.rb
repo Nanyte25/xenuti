@@ -19,6 +19,10 @@ class Xenuti::Processor
   # Update the content. Backend is specified in content_update part of config.
   def self.content_update(config, backends_paths)
     backend_name = config['content_update']['backend']
+
+    # short-circuit if config has no backend
+    return JSON.dump({ source: nil }) if backend_name.nil?
+
     backend_path = backends_paths[backend_name]
     args = config['content_update']['args'].strip unless config['content_update']['args'].nil?
     workdir = config['general']['workdir'].strip

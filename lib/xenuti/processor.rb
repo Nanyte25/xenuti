@@ -84,7 +84,7 @@ class Xenuti::Processor
           fullpath = source
           fullpath = File.join(fullpath, relpath) unless relpath.empty?
           script_report = new_script_report(script, s_path, script_cfg, relpath)
-          execute_script(script, s_path, script_cfg['args'], script_report, fullpath)
+          execute_script(config, script, s_path, script_cfg['args'], script_report, fullpath)
           report['script_reports'] << script_report
         end
       end
@@ -93,14 +93,19 @@ class Xenuti::Processor
   # rubocop:enable MethodLength
 
   # rubocop:disable MethodLength
-  def self.execute_script(script_name, script_path, args, script_report, fullpath)
+  def self.execute_script(config, script_name, script_path, args, script_report, fullpath)
     script_report.scan_info.start_time = Time.now
     args = args.nil? ? '' : args.strip
 
     # execute script
     $log.info "Executing #{script_path} #{args} #{fullpath}"
+    #$log.info "Executing #{script_path} #{args}"
     output = ''
-    Open3.popen3("#{script_path} #{args} #{fullpath}") do |i, o, e|
+    #Open3.popen3("#{script_path} #{args} #{fullpath}") do |i, o, e|
+    
+    workdir = config['general']['workdir'].strip
+
+    Open3.popen3({"XENUTI_WORKDIR" => workdir},"#{script_path} #{args} #{fullpath}") do |i, o, e|
 
       # The goal of following is to stream output from stderr of the script
       # to out logger. We could just check: until e.eof? ... but trouble is

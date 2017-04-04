@@ -104,7 +104,20 @@ class Xenuti::ScriptReport < Hash
   def format_message(message)
     return message if message.is_a? String
     if message.is_a? Array
-      return message.join("\n")
+      out = ''
+
+      # jechoi: Using JSON.pretty_generate() will improve the readability of Hash/Array type sub-messages
+      message.each {|m|
+        if m.is_a? Hash
+          out << JSON.pretty_generate(m)
+        elsif m.is_a? Array
+          out << JSON.pretty_generate(m)
+        else
+          out << m.to_s + "\n"
+        end
+      }
+      return out
+#     return message.join("\n")
     elsif message.is_a? Hash
       out = ''
       key_maxlen = message.key_maxlen + 1
